@@ -79,7 +79,6 @@
 
                 <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
                     <div class="flex items-center gap-2"><h2 class="font-racing text-lg font-bold text-slate-800 italic uppercase" id="formTitleText">Nuevo Trabajo</h2></div>
-                    
                     <div class="flex gap-4">
                         <label class="flex items-center cursor-pointer"><div class="relative"><input type="checkbox" id="isCounterSale" class="sr-only peer" onchange="window.toggleCounterSale()"><div class="w-9 h-5 bg-gray-300 peer-checked:bg-red-600 rounded-full shadow-inner transition-colors relative"><div class="absolute w-3 h-3 bg-white rounded-full shadow top-1 left-1 transition-transform peer-checked:translate-x-4"></div></div></div><span class="ml-2 text-[10px] font-bold text-slate-500 uppercase">Mostrador</span></label>
                         <label class="flex items-center cursor-pointer"><div class="relative"><input type="checkbox" id="isQuoteToggle" class="sr-only peer" onchange="window.toggleQuoteMode()"><div class="w-9 h-5 bg-gray-300 peer-checked:bg-amber-500 rounded-full shadow-inner transition-colors relative"><div class="absolute w-3 h-3 bg-white rounded-full shadow top-1 left-1 transition-transform peer-checked:translate-x-4"></div></div></div><span class="ml-2 text-[10px] font-bold text-slate-500 uppercase" id="quoteLabel">Presupuesto</span></label>
@@ -100,7 +99,10 @@
                             <input type="text" id="itemDesc" placeholder="BUSCAR O DESCRIBIR..." class="inp w-full uppercase" oninput="window.searchProducts(this.value)" autocomplete="off">
                             <div id="productDropdown" class="autocomplete-items hidden"></div>
                         </div>
-                        <select id="itemType" onchange="window.toggleCostInput()" class="inp w-auto text-xs font-bold text-slate-600"><option value="labor">MANO OBRA</option><option value="part">SERVICIOS/REP</option></select>
+                        <select id="itemType" onchange="window.toggleCostInput()" class="inp w-auto text-xs font-bold text-slate-600">
+                            <option value="labor">MANO OBRA</option>
+                            <option value="part">SERVICIOS/REP</option>
+                        </select>
                     </div>
                     <div class="grid grid-cols-3 gap-2">
                         <div class="relative"><label class="text-[9px] font-bold text-gray-400 absolute top-1 left-2">COSTO</label><input type="number" id="itemBuyPrice" placeholder="0" class="inp pt-5 font-bold text-red-600 disabled:bg-gray-100 disabled:text-gray-400" oninput="window.calcPriceFromMargin()"></div>
@@ -115,8 +117,9 @@
                     <div id="orderFooter" class="bg-slate-900 p-4 rounded-xl text-white shadow-xl transition-colors duration-300">
                         <div class="flex justify-between items-center mb-4 border-b border-white/10 pb-2"><p class="text-[10px] font-bold uppercase tracking-widest opacity-70">Total Estimado</p><p class="font-racing text-3xl font-black italic" id="previewTotal">$0</p></div>
                         
+                        <!-- Bloque Pago Inicial -->
                         <div id="paymentSection" class="bg-white/10 p-3 rounded-lg mb-3 border border-white/5">
-                            <div class="flex items-center justify-between mb-2"><label class="text-xs font-bold text-slate-200 flex items-center gap-2"><input type="checkbox" id="checkPaidFull" onchange="window.togglePaymentInput()" class="w-4 h-4 rounded text-red-600 focus:ring-0 cursor-pointer"> PAGADO TOTALMENTE</label><select id="initialPaymentMethod" class="text-[10px] text-slate-800 rounded p-1 font-bold"><option value="Efectivo">Efectivo</option><option value="Banco">Banco</option></select></div>
+                            <div class="flex items-center justify-between mb-2"><label class="text-xs font-bold text-slate-200 flex items-center gap-2"><input type="checkbox" id="checkPaidFull" onchange="window.togglePaymentInput()" class="w-4 h-4 rounded text-red-600 focus:ring-0 cursor-pointer"> PAGADO TOTALMENTE</label><select id="initialPaymentMethod" class="text-[10px] text-slate-800 rounded p-1 font-bold"><option value="Efectivo">Efectivo</option><option value="Banco Jose">Banco Jose</option><option value="Banco Fer">Banco Fer</option></select></div>
                             <div id="partialPaymentContainer" class="flex items-center gap-2"><span class="text-xs text-slate-400">O PAGO PARCIAL:</span><input type="number" id="initialPayment" placeholder="$" class="bg-slate-700 text-white border-none rounded px-2 py-1 text-sm w-full font-bold"></div>
                         </div>
 
@@ -235,39 +238,47 @@
         let tempItems=[], editingOrderId=null, editingItemIndex=-1, activePaymentId=null, editingWithdrawalId=null, currentListFilter='all', viewingOrderId=null;
         let editingExpenseId = null;
         const today = new Date(); 
-        document.getElementById('date').valueAsDate = today; 
-        document.getElementById('wdDate').valueAsDate = today; 
-        const currMonthStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}`;
+        // Corrección de zona horaria para input date
+        const localDate = new Date(today.getTime() - (today.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+        document.getElementById('date').value = localDate; 
+        document.getElementById('wdDate').value = localDate; 
+        const currMonthStr = localDate.substring(0,7);
         document.getElementById('filterMonth').value = currMonthStr; 
         document.getElementById('dashMonth').value = currMonthStr;
 
-        // --- HELPER FUNCTIONS (GLOBAL SCOPE) ---
+        // --- HELPER FUNCTIONS (GLOBAL) ---
         window.safeSetText = (id, text) => { const el = document.getElementById(id); if(el) el.innerText = text; };
         window.formatMoney = (n) => { return new Intl.NumberFormat('es-AR', {style:'currency', currency:'ARS', maximumFractionDigits:0}).format(n); };
         window.exportToExcel = () => { let csv="ID,FECHA,CLIENTE,DNI,AUTO,TOTAL,ESTADO\n"; orders.forEach(o=>{csv+=`${o.customId||''},${o.date},${o.client.name},${o.client.dni||''},${o.client.model},${o.total},${o.status}\n`}); const link=document.createElement("a");link.href="data:text/csv;charset=utf-8,"+encodeURI(csv);link.download="Jofert_Data.csv";document.body.appendChild(link);link.click(); };
 
         // --- CORE LOGIC ---
-        async function initApp() { 
-            try { 
-                const app = initializeApp(firebaseConfig); 
-                auth = getAuth(app); 
-                db = getFirestore(app); 
-                await signInAnonymously(auth); 
-                onAuthStateChanged(auth, (u) => { 
-                    if (u) { 
-                        document.getElementById('connectionStatus').classList.replace('bg-red-500', 'bg-green-500'); 
-                        startListeners(); 
-                    } 
-                }); 
-            } catch (e) { console.error(e); } 
-        }
-        
+        async function initApp() { try { const app = initializeApp(firebaseConfig); auth = getAuth(app); db = getFirestore(app); await signInAnonymously(auth); onAuthStateChanged(auth, (u) => { if (u) { document.getElementById('connectionStatus').classList.replace('bg-red-500', 'bg-green-500'); startListeners(); } }); } catch (e) { console.error(e); } }
         function startListeners() {
             onSnapshot(query(collection(db, "orders"), orderBy("date", "desc")), (s) => { orders = s.docs.map(d => ({id:d.id, ...d.data()})); window.renderApp(); window.renderDashboard(); window.renderHistoryTable(); });
             onSnapshot(query(collection(db, "expenses"), orderBy("date", "desc")), (s) => { expenses = s.docs.map(d => ({id:d.id, ...d.data()})); window.renderDashboard(); window.renderExpensesList(); });
             onSnapshot(query(collection(db, "withdrawals"), orderBy("date", "desc")), (s) => { withdrawals = s.docs.map(d => ({id:d.id, ...d.data()})); window.renderWithdrawals(); window.renderDashboard(); });
             onSnapshot(query(collection(db, "products"), orderBy("desc")), (s) => { products = s.docs.map(d => ({id:d.id, ...d.data()})); window.renderProductsList(); });
         }
+
+        // --- WHATSAPP FUNCTION ---
+        window.sendWhatsApp = (id) => {
+            const o = orders.find(x => x.id === id);
+            if(!o) return;
+            const isQuote = o.docType === 'quote';
+            const typeText = isQuote ? "PRESUPUESTO" : "ORDEN DE TRABAJO";
+            const clientName = o.client.name || "Cliente";
+            let msg = `*JOFERT RACING*\nHola *${clientName}*, te envío el detalle de tu ${typeText.toLowerCase()}.\n\n`;
+            if (o.client.model && o.client.model !== "VENTA MOSTRADOR") { msg += `🚗 *Vehículo:* ${o.client.model} | ${o.client.plate || ''}\n`; }
+            msg += `📅 *Fecha:* ${new Date(o.date).toLocaleDateString()}\n\n*TRABAJOS / REPUESTOS:*\n`;
+            o.items.forEach(i => { msg += `• ${i.desc} - $${i.sellPrice}\n`; });
+            msg += `\n💰 *TOTAL: $${o.total}*\n`;
+            if (!isQuote) { const paid = o.paidAmount || 0; const pending = o.total - paid; if (pending > 0) msg += `⚠️ *Saldo Pendiente:* $${pending}\n`; }
+            msg += `\nGracias por confiar en nosotros!`;
+            let phone = o.client.phone ? o.client.phone.replace(/[^0-9]/g, '') : "";
+            if (phone.length === 10) phone = "549" + phone; 
+            const url = phone ? `https://wa.me/${phone}?text=${encodeURIComponent(msg)}` : `https://wa.me/?text=${encodeURIComponent(msg)}`;
+            window.open(url, '_blank');
+        };
 
         // --- NAVIGATION ---
         window.switchTab = (t) => { 
@@ -277,7 +288,6 @@
             });
             const target = document.getElementById(`view-${t}`); if(target) target.classList.remove('hidden');
             const btn = document.getElementById(`tab-${t}`); if(btn) btn.className="flex flex-col items-center justify-center transition tab-active border-b-0 h-full w-full";
-            
             if(t==='finance') window.renderDashboard();
             if(t==='expenses') window.renderExpensesList();
             if(t==='search') { document.getElementById('searchInput').value=''; window.renderHistoryTable(); document.getElementById('searchInput').focus(); }
@@ -303,60 +313,63 @@
             const isQuote = o.docType === 'quote';
             let borderClass = isQuote ? 'border-l-amber-400' : (o.status === 'paid' ? 'border-l-green-500' : (o.status === 'partial' ? 'border-l-yellow-500' : 'border-l-red-500'));
             let badge = isQuote ? '<span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-[10px] font-black tracking-wide">PRESUPUESTO</span>' : `<span class="bg-slate-100 px-1 rounded font-mono text-[10px] text-slate-500">${o.customId || '#'}</span>`;
-            
-            // Botón WhatsApp con número limpio
-            let phone = o.client.phone ? o.client.phone.replace(/[^0-9]/g, '') : "";
-            if (phone.length === 10) phone = "549" + phone;
-            let waButton = `<button onclick="window.sendWhatsApp('${o.id}')" class="flex-1 bg-green-500 text-white rounded py-1.5 font-bold shadow-sm hover:bg-green-600 flex justify-center items-center gap-1 text-xs"><i data-lucide="message-circle" class="w-4 h-4"></i></button>`;
-            
-            let actionButtons = isQuote ? 
-                `<button onclick="window.convertToOrder('${o.id}')" class="flex-1 bg-green-600 text-white rounded py-1.5 font-bold shadow-sm hover:bg-green-700 flex justify-center items-center gap-1 text-xs"><i data-lucide="check-circle" class="w-4 h-4"></i> APROBAR</button>` : 
-                `<button onclick="window.openPaymentModal('${o.id}')" class="flex-1 bg-white border border-slate-300 rounded py-1.5 font-bold text-slate-600 shadow-sm hover:bg-slate-50 text-xs">COBRAR</button>`;
-            
+            let actionButtons = isQuote ? `<button onclick="window.convertToOrder('${o.id}')" class="flex-1 bg-green-600 text-white rounded py-1.5 font-bold shadow-sm hover:bg-green-700 flex justify-center items-center gap-1 text-xs"><i data-lucide="check-circle" class="w-4 h-4"></i> APROBAR</button>` : `<button onclick="window.openPaymentModal('${o.id}')" class="flex-1 bg-white border border-slate-300 rounded py-1.5 font-bold text-slate-600 shadow-sm hover:bg-slate-50 text-xs">COBRAR</button>`;
             const clientName = o.client.name.toUpperCase();
             
+            let waButton = `<button onclick="window.sendWhatsApp('${o.id}')" class="flex-1 bg-green-500 text-white rounded py-1.5 font-bold shadow-sm hover:bg-green-600 flex justify-center items-center gap-1 text-xs"><i data-lucide="message-circle" class="w-4 h-4"></i></button>`;
+
             let totalCost = 0; if (o.items) o.items.forEach(i => { if (i.type !== 'labor') totalCost += (i.buyPrice || 0); });
             const margin = o.total - totalCost;
 
-            return `
-            <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm border-l-4 ${borderClass} relative uppercase-force">
+            return `<div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm border-l-4 ${borderClass} relative uppercase-force">
                 ${isQuote ? '<div class="absolute top-2 right-2 opacity-10"><i data-lucide="file-text" class="w-12 h-12"></i></div>' : ''}
                 <div class="flex justify-between items-start mb-2">
-                    <div>
-                        <div class="flex items-center gap-2 mb-1">${badge}<h4 class="font-bold text-slate-800">${clientName}</h4></div>
-                        <p class="text-xs text-slate-500 font-bold">${(o.client.model || '').toUpperCase()} | ${(o.client.plate || '').toUpperCase()}</p>
-                        <p class="text-[10px] text-slate-400 mt-1">${new Date(o.date).toLocaleDateString()}</p>
-                    </div>
-                    <div class="text-right relative z-10">
-                        <span class="block font-black text-slate-800 text-lg">${window.formatMoney(o.total)}</span>
-                        <span class="text-[10px] font-bold text-green-600 block">MARGEN: ${window.formatMoney(margin)}</span>
-                        ${!isQuote && (o.total - (o.paidAmount || 0)) > 1 ? `<span class="text-[10px] text-red-500 font-bold block mt-1">FALTA ${window.formatMoney(o.total - (o.paidAmount || 0))}</span>` : ''}
-                    </div>
+                    <div><div class="flex items-center gap-2 mb-1">${badge}<h4 class="font-bold text-slate-800">${clientName}</h4></div><p class="text-xs text-slate-500 font-bold">${(o.client.model || '').toUpperCase()} | ${(o.client.plate || '').toUpperCase()}</p><p class="text-[10px] text-slate-400 mt-1">${new Date(o.date).toLocaleDateString()}</p></div>
+                    <div class="text-right relative z-10"><span class="block font-black text-slate-800 text-lg">${window.formatMoney(o.total)}</span><span class="text-[10px] font-bold text-green-600 block">MARGEN: ${window.formatMoney(margin)}</span>${!isQuote && (o.total - (o.paidAmount || 0)) > 1 ? `<span class="text-[10px] text-red-500 font-bold block mt-1">FALTA ${window.formatMoney(o.total - (o.paidAmount || 0))}</span>` : ''}</div>
                 </div>
-                <details class="text-xs relative z-10">
-                    <summary class="cursor-pointer text-slate-400 py-1 border-t border-dashed mt-2 flex justify-between"><span>OPCIONES</span><i data-lucide="chevron-down" class="w-3 h-3 rotate-icon"></i></summary>
-                    <div class="pt-2 space-y-1 bg-slate-50 -mx-4 -mb-4 p-4 mt-1 border-t border-slate-100">
-                        ${o.items.map(i => `<div class="flex justify-between"><span>${i.desc.toUpperCase()}</span><span class="font-bold">${window.formatMoney(i.sellPrice)}</span></div>`).join('')}
-                        <div class="flex gap-2 mt-3 pt-2 border-t border-slate-200">
-                            <button onclick="window.printOrder('${o.id}')" class="p-1.5 bg-red-50 text-red-600 rounded border border-red-100 hover:bg-red-100" title="PDF"><i data-lucide="file-text" class="w-4 h-4"></i></button>
-                            ${waButton}
-                            ${actionButtons}
-                            <button onclick="window.loadOrderForEdit('${o.id}')" class="p-1.5 bg-blue-50 text-blue-600 rounded border border-blue-100 hover:bg-blue-100" title="EDITAR"><i data-lucide="pencil" class="w-4 h-4"></i></button>
-                            <button onclick="window.deleteOrder('${o.id}')" class="p-1.5 bg-gray-50 text-gray-400 rounded border border-gray-100 hover:text-red-500" title="ELIMINAR"><i data-lucide="trash" class="w-4 h-4"></i></button>
-                        </div>
-                    </div>
-                </details>
+                <details class="text-xs relative z-10"><summary class="cursor-pointer text-slate-400 py-1 border-t border-dashed mt-2 flex justify-between"><span>OPCIONES</span><i data-lucide="chevron-down" class="w-3 h-3 rotate-icon"></i></summary><div class="pt-2 space-y-1 bg-slate-50 -mx-4 -mb-4 p-4 mt-1 border-t border-slate-100">${o.items.map(i => `<div class="flex justify-between"><span>${i.desc.toUpperCase()}</span><span class="font-bold">${window.formatMoney(i.sellPrice)}</span></div>`).join('')}<div class="flex gap-2 mt-3 pt-2 border-t border-slate-200"><button onclick="window.printOrder('${o.id}')" class="p-1.5 bg-red-50 text-red-600 rounded border border-red-100 hover:bg-red-100" title="PDF"><i data-lucide="file-text" class="w-4 h-4"></i></button>${waButton}${actionButtons}<button onclick="window.loadOrderForEdit('${o.id}')" class="p-1.5 bg-blue-50 text-blue-600 rounded border border-blue-100 hover:bg-blue-100" title="EDITAR"><i data-lucide="pencil" class="w-4 h-4"></i></button><button onclick="window.deleteOrder('${o.id}')" class="p-1.5 bg-gray-50 text-gray-400 rounded border border-gray-100 hover:text-red-500" title="ELIMINAR"><i data-lucide="trash" class="w-4 h-4"></i></button></div></div></details>
             </div>`;
         }
 
         window.renderExpensesList = () => {
-            const list = document.getElementById('manageExpensesList'); if(!list) return;
-            const showAll = document.getElementById('filterManageExpenses') && document.getElementById('filterManageExpenses').value === 'all';
-            const m = document.getElementById('dashMonth').value;
-            let displayExp = expenses;
-            if (!showAll) { displayExp = expenses.filter(e => e.date === m); }
-            if(displayExp.length === 0) { list.innerHTML = '<p class="text-center text-xs text-slate-400">Sin gastos</p>'; return; }
-            list.innerHTML = displayExp.map(e => `<div class="flex justify-between items-center text-xs p-3 bg-slate-50 border rounded-lg border-slate-200 hover:bg-white transition"><div><span class="font-bold text-slate-800 block uppercase text-sm">${e.desc}</span><span class="text-[10px] text-slate-400">${e.date} | ${e.method||'Efvo'}</span></div><div class="flex items-center gap-3"><span class="font-black text-red-600 text-sm">-${window.formatMoney(e.amount)}</span><button onclick="window.loadExpenseForEdit('${e.id}')" class="p-2 bg-white border border-slate-200 rounded text-blue-400 hover:text-blue-600 hover:border-blue-300 transition"><i data-lucide="pencil" class="w-4 h-4"></i></button><button onclick="window.deleteExpense('${e.id}')" class="p-2 bg-white border border-slate-200 rounded text-slate-400 hover:text-red-500 hover:border-red-200 transition"><i data-lucide="trash" class="w-4 h-4"></i></button></div></div>`).join('');
+            const list = document.getElementById('manageExpensesList'); 
+            const financeList = document.getElementById('financeExpensesList');
+            
+            // Logic for Expenses Tab List
+            if(list) {
+                const showAll = document.getElementById('filterManageExpenses') && document.getElementById('filterManageExpenses').value === 'all';
+                const m = document.getElementById('dashMonth').value;
+                let displayExp = expenses;
+                if (!showAll) { displayExp = expenses.filter(e => e.date === m); }
+                
+                if(displayExp.length === 0) { 
+                    list.innerHTML = '<p class="text-center text-xs text-slate-400">Sin gastos</p>'; 
+                } else {
+                    list.innerHTML = displayExp.map(e => `
+                        <div class="flex justify-between items-center text-xs p-3 bg-slate-50 border rounded-lg border-slate-200 hover:bg-white transition">
+                            <div>
+                                <span class="font-bold text-slate-800 block uppercase text-sm">${e.desc}</span>
+                                <span class="text-[10px] text-slate-400">${e.date} | ${e.method||'Efvo'}</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="font-black text-red-600 text-sm">-${window.formatMoney(e.amount)}</span>
+                                <button onclick="window.loadExpenseForEdit('${e.id}')" class="p-2 bg-white border border-slate-200 rounded text-blue-400 hover:text-blue-600 hover:border-blue-300 transition"><i data-lucide="pencil" class="w-4 h-4"></i></button>
+                                <button onclick="window.deleteExpense('${e.id}')" class="p-2 bg-white border border-slate-200 rounded text-slate-400 hover:text-red-500 hover:border-red-200 transition"><i data-lucide="trash" class="w-4 h-4"></i></button>
+                            </div>
+                        </div>`).join('');
+                }
+            }
+
+            // Logic for Finance Tab List (Read Only, Current Month)
+            if(financeList) {
+                 const m = document.getElementById('dashMonth').value;
+                 const mExpenses = expenses.filter(e => e.date === m);
+                 if(mExpenses.length === 0) {
+                     financeList.innerHTML = '<p class="text-center text-xs text-slate-400">Sin gastos este mes</p>';
+                 } else {
+                     financeList.innerHTML = mExpenses.map(e => `<div class="flex justify-between items-center text-xs p-2 bg-slate-50 border rounded border-slate-200"><div><span class="font-bold text-slate-700 block uppercase">${e.desc}</span></div><div class="flex items-center gap-2"><span class="font-bold text-red-500">-${window.formatMoney(e.amount)}</span></div></div>`).join('');
+                 }
+            }
             lucide.createIcons();
         }
 
@@ -382,19 +395,47 @@
 
             let grandTotalFer=0, grandTotalJose=0, cashIn=0, bankIn=0, cashOut=0, bankOut=0;
             orders.forEach(o => { if(o.docType === 'quote') return; (o.payments || []).forEach(p => { if(p.method === 'Banco') bankIn += p.amount; else cashIn += p.amount; }); });
-            const allMonths = new Set([...orders.filter(o=>o.docType!=='quote').map(o => o.date.substring(0,7)), ...expenses.map(e => e.date)]);
-            allMonths.forEach(monthKey => {
-                const mo = orders.filter(o => o.date.startsWith(monthKey) && o.docType !== 'quote');
-                const me = expenses.filter(e => e.date === monthKey);
-                let mLabor=0, mPartsSell=0, mPartsCost=0;
-                mo.forEach(o => o.items.forEach(i => { if(i.type==='labor') mLabor += i.sellPrice; else { mPartsSell += i.sellPrice; mPartsCost += (i.buyPrice||0); } }));
-                let mExp = me.reduce((s,e)=>s+e.amount, 0); let mNetLabor = mLabor - mExp; let mPartsProfit = mPartsSell - mPartsCost;
-                grandTotalFer += (mNetLabor * 0.70) + (mPartsProfit * 0.50); grandTotalJose += (mNetLabor * 0.30) + (mPartsProfit * 0.50);
+            
+            // Balance Logic (Strictly Monthly for Partners + New Payment Methods)
+            const mWithdrawals = withdrawals.filter(w => w.date.startsWith(m));
+            let ferWd = 0, joseWd = 0;
+            
+            // 1. Manual Withdrawals
+            mWithdrawals.forEach(w => {
+                if(w.person === 'Fer') ferWd += w.amount;
+                else joseWd += w.amount;
             });
 
-            let ferWd=0, joseWd=0;
-            withdrawals.forEach(w => { if(w.person === 'Fer') ferWd += w.amount; else joseWd += w.amount; if(w.method === 'Banco') bankOut += w.amount; else cashOut += w.amount; });
-            expenses.forEach(e => { if(e.method === 'Banco') bankOut += e.amount; else cashOut += e.amount; });
+            // 2. Automatic Withdrawals from "Banco Jose" / "Banco Fer" payments in ORDERS of this month
+            mOrders.forEach(o => {
+                (o.payments || []).forEach(p => {
+                    if(p.method === 'Banco Jose') joseWd += p.amount;
+                    if(p.method === 'Banco Fer') ferWd += p.amount;
+                });
+            });
+
+            // Global Cash/Bank (Historical - Calculated CORRECTLY for Monthly View)
+            // FIX: Cash/Bank should reflect month-only flow for proper reconciliation with month income
+            // OR: We show Total Assets (historical) but clarify. 
+            // User complaint: "Cash > Income is impossible". So we switch to MONTHLY CASH FLOW.
+            
+            cashIn = 0; bankIn = 0; cashOut = 0; bankOut = 0;
+
+            // Cash In (Monthly)
+            mOrders.forEach(o => {
+                (o.payments || []).forEach(p => {
+                    if(p.method === 'Efectivo') cashIn += p.amount;
+                    else if(p.method === 'Banco') bankIn += p.amount;
+                });
+            });
+
+            // Cash Out (Monthly Withdrawals + Monthly Expenses)
+            mWithdrawals.forEach(w => {
+                 if(w.method === 'Banco') bankOut += w.amount; else cashOut += w.amount;
+            });
+            mExpenses.forEach(e => {
+                 if(e.method === 'Banco') bankOut += e.amount; else cashOut += e.amount;
+            });
 
             window.safeSetText('grossIncomeDisplay', window.formatMoney(grossTotal));
             window.safeSetText('repoBalanceHeader', window.formatMoney(repoFund));
@@ -406,16 +447,20 @@
             window.safeSetText('partsGross', window.formatMoney(partsGross));
             window.safeSetText('partsCost', `-${window.formatMoney(partsCost)}`);
             window.safeSetText('partsNet', window.formatMoney(netParts));
+            
+            // Partner Stats (Monthly)
             window.safeSetText('statFer', window.formatMoney(ferProfit));
             window.safeSetText('ferLaborSplit', window.formatMoney(ferLaborShare));
             window.safeSetText('ferPartsSplit', window.formatMoney(ferPartsShare));
             window.safeSetText('statFerWd', `-${window.formatMoney(ferWd)}`);
-            window.safeSetText('balFer', window.formatMoney(grandTotalFer - ferWd));
+            window.safeSetText('balFer', window.formatMoney(ferProfit - ferWd));
+
             window.safeSetText('statMe', window.formatMoney(joseProfit));
             window.safeSetText('meLaborSplit', window.formatMoney(joseLaborShare));
             window.safeSetText('mePartsSplit', window.formatMoney(josePartsShare));
             window.safeSetText('statMeWd', `-${window.formatMoney(joseWd)}`);
-            window.safeSetText('balMe', window.formatMoney(grandTotalJose - joseWd));
+            window.safeSetText('balMe', window.formatMoney(joseProfit - joseWd));
+
             window.safeSetText('expensesTotal', window.formatMoney(fixedExpenses));
             window.safeSetText('cashBalance', window.formatMoney(cashIn - cashOut));
             window.safeSetText('bankBalance', window.formatMoney(bankIn - bankOut));
@@ -424,14 +469,7 @@
             window.safeSetText('countVehicles', vehiclesCount);
             window.safeSetText('countCounter', counterCount);
             
-            const financeExpList = document.getElementById('financeExpensesList');
-            if(financeExpList) {
-                financeExpList.innerHTML = mExpenses.map(e => `
-                    <div class="flex justify-between items-center text-xs p-2 bg-slate-50 border rounded border-slate-200">
-                        <div><span class="font-bold text-slate-700 block uppercase">${e.desc}</span></div>
-                        <div class="flex items-center gap-2"><span class="font-bold text-red-500">-${window.formatMoney(e.amount)}</span></div>
-                    </div>`).join('');
-            }
+            window.renderExpensesList(); // Update the list view too
         };
 
         // --- ACTIONS ---
@@ -439,25 +477,6 @@
             if(confirm("¿ELIMINAR ESTE REGISTRO? Esta acción no se puede deshacer.")) {
                 try { await deleteDoc(doc(db, "orders", id)); } catch (error) { console.error("Error", error); alert("Error al eliminar."); }
             }
-        };
-
-        window.sendWhatsApp = (id) => {
-            const o = orders.find(x => x.id === id);
-            if(!o) return;
-            const isQuote = o.docType === 'quote';
-            const typeText = isQuote ? "PRESUPUESTO" : "ORDEN DE TRABAJO";
-            const clientName = o.client.name || "Cliente";
-            let msg = `*JOFERT RACING*\nHola *${clientName}*, te envío el detalle de tu ${typeText.toLowerCase()}.\n\n`;
-            if (o.client.model && o.client.model !== "VENTA MOSTRADOR") { msg += `🚗 *Vehículo:* ${o.client.model} | ${o.client.plate || ''}\n`; }
-            msg += `📅 *Fecha:* ${new Date(o.date).toLocaleDateString()}\n\n*TRABAJOS / REPUESTOS:*\n`;
-            o.items.forEach(i => { msg += `• ${i.desc} - $${i.sellPrice}\n`; });
-            msg += `\n💰 *TOTAL: $${o.total}*\n`;
-            if (!isQuote) { const paid = o.paidAmount || 0; const pending = o.total - paid; if (pending > 0) msg += `⚠️ *Saldo Pendiente:* $${pending}\n`; }
-            msg += `\nGracias por confiar en nosotros!`;
-            let phone = o.client.phone ? o.client.phone.replace(/[^0-9]/g, '') : "";
-            if (phone.length === 10) phone = "549" + phone; 
-            const url = phone ? `https://wa.me/${phone}?text=${encodeURIComponent(msg)}` : `https://wa.me/?text=${encodeURIComponent(msg)}`;
-            window.open(url, '_blank');
         };
 
         window.searchProducts = (q) => { q = q.toUpperCase(); const drop = document.getElementById('productDropdown'); if (q.length < 2) { drop.classList.add('hidden'); return; } const matches = products.filter(p => p.desc.includes(q) || (p.code && p.code.includes(q))); if (matches.length === 0) { drop.classList.add('hidden'); return; } drop.innerHTML = matches.map(p => `<div onclick="window.selectProduct('${p.desc}', ${p.cost}, '${p.code || ''}')"><span class="text-xs text-gray-400 font-mono mr-2">${p.code || '#'}</span> ${p.desc} <span class="float-right text-gray-400">$${p.cost}</span></div>`).join(''); drop.classList.remove('hidden'); };
@@ -472,21 +491,32 @@
         window.renderHistoryTable = () => { const tbody = document.getElementById('historyTableBody'); if(!tbody) return; const q = document.getElementById('searchInput').value.toUpperCase(); const history = orders.filter(o => o.docType !== 'quote'); const filtered = q.length === 0 ? history.slice(0, 20) : history.filter(o => (o.client.name && o.client.name.toUpperCase().includes(q)) || (o.client.plate && o.client.plate.toUpperCase().includes(q)) || (o.client.dni && o.client.dni.toUpperCase().includes(q))); if(filtered.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-slate-400">SIN RESULTADOS</td></tr>'; return; } tbody.innerHTML = filtered.map(o => { const km = o.client.km || '-'; return `<tr onclick="window.viewOrderDetails('${o.id}')" class="cursor-pointer hover:bg-slate-100"><td>${new Date(o.date).toLocaleDateString()}</td><td>${o.client.plate} <br><span class="text-[9px] text-slate-400">${o.client.model}</span></td><td>${o.client.name}</td><td>${km}</td><td>${window.formatMoney(o.total)}</td></tr>` }).join(''); };
         window.performSearch = () => { window.renderHistoryTable(); };
         window.viewOrderDetails = (id) => { const o = orders.find(x => x.id === id); if(!o) return; viewingOrderId = id; document.getElementById('viewDate').innerText = new Date(o.date).toLocaleDateString(); document.getElementById('viewClient').innerText = o.client.name; document.getElementById('viewCar').innerText = `${o.client.model} | ${o.client.plate}`; document.getElementById('viewItemsList').innerHTML = o.items.map(i => `<div class="flex justify-between border-b border-gray-100 pb-1"><span>${i.desc}</span><span class="font-bold">${window.formatMoney(i.sellPrice)}</span></div>`).join(''); document.getElementById('viewTotal').innerText = window.formatMoney(o.total); document.getElementById('viewPaymentsList').innerHTML = (o.payments && o.payments.length > 0) ? `<p class="font-bold mb-1">PAGOS REGISTRADOS:</p>` + o.payments.map(p => `<div class="flex justify-between"><span>${new Date(p.date).toLocaleDateString()} (${p.method||'Efvo'})</span><span class="text-green-600 font-bold">${window.formatMoney(p.amount)}</span></div>`).join('') : `<p class="italic">Sin pagos registrados</p>`; document.getElementById('viewerModal').classList.remove('hidden'); };
-        
-        // --- PRINT ORDER ---
         window.printOrderFromView = () => { 
             const o = orders.find(x => x.id === viewingOrderId); 
             if(!o) return; 
+            
             const isQuote = o.docType === 'quote'; 
             const { jsPDF } = window.jspdf; 
             const doc = new jsPDF(); 
+            
             const img = new Image();
             img.src = 'logo.png';
+
             img.onload = () => {
                 doc.addImage(img, 'PNG', 10, 10, 25, 25);
-                doc.setFillColor(20, 20, 20); doc.rect(0, 38, 210, 10, 'F'); 
-                doc.setTextColor(220, 38, 38); doc.setFontSize(22); doc.setFont("helvetica", "bolditalic"); doc.text("JOFERT RACING", 40, 20); 
-                doc.setTextColor(100, 100, 100); doc.setFontSize(10); doc.setFont("helvetica", "normal"); 
+                const headerColor = isQuote ? [245, 158, 11] : [220, 38, 38]; 
+                doc.setFillColor(20, 20, 20); 
+                doc.rect(0, 38, 210, 2, 'F'); 
+                doc.addImage(img, 'PNG', 10, 10, 25, 25);
+
+                doc.setTextColor(220, 38, 38); 
+                doc.setFontSize(22); 
+                doc.setFont("helvetica", "bolditalic"); 
+                doc.text("JOFERT RACING", 40, 20); 
+                
+                doc.setTextColor(100, 100, 100); 
+                doc.setFontSize(10); 
+                doc.setFont("helvetica", "normal"); 
                 doc.text("Puerto San Julian 1350, Presidente Derqui", 40, 26);
                 doc.text("Tel: 11-2159-8743 | 11-3474-7603", 40, 31);
 
@@ -519,7 +549,7 @@
             img.onerror = () => { alert("Logo no encontrado, imprimiendo sin imagen."); };
         };
         window.printOrder = (id) => { viewingOrderId = id; window.printOrderFromView(); };
-
+        
         window.addExpenseFromTab = async () => { const d=document.getElementById('dashMonth').value, desc=document.getElementById('manageExpenseDesc').value.toUpperCase(), a=parseFloat(document.getElementById('manageExpenseAmount').value), m=document.getElementById('manageExpenseMethod').value; if(!desc||isNaN(a)) return alert("Datos incompletos"); 
             const data = {date:d,desc,amount:a,method:m,createdAt:new Date()};
             if (editingExpenseId) { await updateDoc(doc(db, "expenses", editingExpenseId), data); window.cancelEditExpense(); } else { await addDoc(collection(db,"expenses"), data); }
@@ -542,6 +572,18 @@
         function generateId(date) { const m = date.substring(0,7); const max = orders.filter(o=>o.docType!=='quote' && o.customId && o.customId.startsWith(m)).reduce((m,o)=>{const s=parseInt(o.customId.split('-')[2]);return s>m?s:m},0); return `${m}-${String(max+1).padStart(3,'0')}`; }
         window.convertToOrder = async (id) => { if(!confirm("¿APROBAR PRESUPUESTO Y CREAR ORDEN DE TRABAJO?")) return; const newId = generateId(new Date().toISOString()); await updateDoc(doc(db,"orders",id), { docType: 'order', customId: newId, status: 'pending', date: new Date().toISOString().substring(0,10), updatedAt: new Date() }); };
         
+        // --- GESTIÓN DE PAGOS SEGURA ---
+        window.openCurrentOrderPayment = () => {
+            if (editingOrderId) window.openPaymentModal(editingOrderId);
+        };
+
+        window.openPaymentModal=(id)=>{activePaymentId=id;const o=orders.find(x=>x.id===id);if(!o)return;document.getElementById('payBalance').innerText=window.formatMoney(o.total-(o.paidAmount||0));document.getElementById('paymentHistoryList').innerHTML=(o.payments||[]).map((p,i)=>`<div class="flex justify-between p-2 border-b text-sm"><span>${new Date(p.date).toLocaleDateString()}</span><span class="font-bold">${window.formatMoney(p.amount)}</span><span class="text-xs text-gray-400 ml-2">${p.method||'Efectivo'}</span><button onclick="window.delPay(${i})" class="text-red-500 ml-auto"><i data-lucide="trash" class="w-3 h-3"></i></button></div>`).join('');document.getElementById('paymentModal').classList.remove('hidden');lucide.createIcons();};
+        window.closePaymentModal=()=>document.getElementById('paymentModal').classList.add('hidden');
+        window.addPayment=async()=>{const v=parseFloat(document.getElementById('newPaymentInput').value); const m=document.getElementById('newPaymentMethod').value; if(isNaN(v))return;const o=orders.find(x=>x.id===activePaymentId);const np=[...(o.payments||[]),{amount:v,date:new Date().toISOString(),method:m}];const pa=np.reduce((a,b)=>a+b.amount,0);await updateDoc(doc(db,"orders",activePaymentId),{payments:np,paidAmount:pa,status:pa>=o.total-1?'paid':'partial'});document.getElementById('newPaymentInput').value='';window.closePaymentModal();}; // Cerrar modal tras pago
+        window.toggleFullPayModal = () => { const check = document.getElementById('payFullCheck'); const input = document.getElementById('newPaymentInput'); if (check.checked) { const o = orders.find(x => x.id === activePaymentId); if(o) { const bal = o.total - (o.paidAmount || 0); input.value = bal; input.disabled = true; } } else { input.value = ''; input.disabled = false; input.focus(); } };
+        window.delPay=async(i)=>{if(!confirm("¿BORRAR PAGO?"))return;const o=orders.find(x=>x.id===activePaymentId);const np=[...o.payments];np.splice(i,1);const pa=np.reduce((a,b)=>a+b.amount,0);await updateDoc(doc(db,"orders",activePaymentId),{payments:np,paidAmount:pa,status:pa>=o.total-1?'paid':(pa>0?'partial':'pending')});window.openPaymentModal(activePaymentId);};
+        window.deleteOrder = async (id) => { if(confirm("¿ELIMINAR ESTE REGISTRO? Esta acción no se puede deshacer.")) { try { await deleteDoc(doc(db, "orders", id)); } catch (error) { console.error("Error al eliminar:", error); alert("Hubo un error al eliminar."); } } };
+
         // --- INIT ---
         async function init() { await initApp(); }
         window.onload = init;
