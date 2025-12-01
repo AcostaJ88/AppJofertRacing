@@ -19,28 +19,22 @@
         body { font-family: 'Inter', sans-serif; background-color: var(--racing-gray); padding-bottom: 90px; color: #1f2937; }
         .font-racing { font-family: 'Exo 2', sans-serif; }
         .gradient-header { background: linear-gradient(135deg, #e5e7eb 0%, #9ca3af 100%); border-bottom: 4px solid var(--racing-red); }
-        
-        /* UI */
         input[type="text"], input[type="text"]::placeholder, .uppercase-force { text-transform: uppercase; }
         .inp { width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; font-weight: 600; outline: none; }
         .inp:focus { border-color: var(--racing-red); box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1); }
         .btn-primary { background: var(--racing-black); color: white; font-weight: 700; padding: 10px; border-radius: 8px; display: flex; justify-content: center; items-center; gap: 6px; }
         .stat-card { background: white; border-radius: 12px; padding: 16px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 1px solid #e5e7eb; }
-        
-        /* Utility */
         .loader { border: 3px solid #f3f3f3; border-top: 3px solid var(--racing-red); border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; }
         .tab-active { color: var(--racing-red); border-top: 3px solid var(--racing-red); background: white; }
         .tab-inactive { color: #9ca3af; border-top: 3px solid transparent; background: white; }
         details > summary { list-style: none; }
         details[open] .rotate-icon { transform: rotate(180deg); }
         .rotate-icon { transition: transform 0.2s; }
-        
         .history-table { width: 100%; border-collapse: collapse; font-size: 11px; }
         .history-table th { background-color: var(--racing-black); color: white; padding: 8px; text-align: left; text-transform: uppercase; }
         .history-table td { padding: 8px; border-bottom: 1px solid #e5e7eb; color: #374151; font-weight: 600; }
         .history-table tr:nth-child(even) { background-color: #f9fafb; }
         .history-table tr:hover { background-color: #fee2e2; cursor: pointer; }
-        
         .toggle-checkbox:checked { right: 0; border-color: #dc2626; }
         .toggle-checkbox:checked + .toggle-label { background-color: #dc2626; }
         .filter-btn { padding: 8px 12px; font-size: 10px; font-weight: 800; text-transform: uppercase; border-radius: 20px; border: 1px solid #e5e7eb; background: white; color: #6b7280; transition: all 0.2s; white-space: nowrap; }
@@ -101,7 +95,8 @@
                         </div>
                         <select id="itemType" onchange="window.toggleCostInput()" class="inp w-auto text-xs font-bold text-slate-600">
                             <option value="labor">MANO OBRA</option>
-                            <option value="part">SERVICIOS/REP</option>
+                            <option value="part">REPUESTO</option>
+                            <option value="service">SERVICIO</option>
                         </select>
                     </div>
                     <div class="grid grid-cols-3 gap-2">
@@ -194,16 +189,16 @@
         <!-- 6. FINANZAS -->
         <div id="view-finance" class="hidden space-y-6 pb-20">
             <div class="flex justify-between items-center mb-4"><div><h2 class="font-racing text-xl font-black italic text-slate-800 uppercase">Finanzas</h2><p class="text-xs text-slate-500">ANÁLISIS MENSUAL</p></div><input type="month" id="dashMonth" onchange="window.renderDashboard()" class="text-sm font-bold border border-slate-300 rounded-lg p-2 bg-white text-red-600 shadow-sm"></div>
-            <div class="bg-slate-900 rounded-xl p-5 text-white shadow-lg border-l-4 border-white mb-4"><div class="flex justify-between items-start"><div><p class="text-[10px] font-bold uppercase tracking-widest text-slate-400">INGRESOS BRUTOS (TOTAL)</p><p class="font-racing text-2xl font-black text-white" id="grossIncomeDisplay">$0</p></div><div class="text-right"><p class="text-[10px] font-bold uppercase tracking-widest text-red-400">REPOSICIÓN (COSTOS)</p><p class="font-racing text-xl font-bold text-red-300" id="repoBalanceHeader">$0</p></div></div></div>
-            <div class="bg-white rounded-xl p-5 shadow-lg border-2 border-emerald-500 relative overflow-hidden mb-4"><div class="absolute top-0 right-0 -mt-2 -mr-2 w-20 h-20 bg-emerald-100 rounded-full opacity-50"></div><p class="text-[10px] font-bold uppercase tracking-widest text-emerald-600 mb-1">GANANCIA NETA A DIVIDIR</p><p class="font-racing text-4xl font-black text-emerald-600 leading-none" id="netProfitSplit">$0</p><p class="text-[10px] text-slate-400 mt-2 font-bold">(Ventas Totales - Costos Repuestos - Gastos Fijos)</p></div>
+            <div class="bg-slate-900 rounded-xl p-5 text-white shadow-lg border-l-4 border-white mb-4"><div class="flex justify-between items-start"><div><p class="text-[10px] font-bold uppercase tracking-widest text-slate-400">INGRESOS BRUTOS (TOTAL)</p><p class="font-racing text-2xl font-black text-white" id="grossIncomeDisplay">$0</p></div><div class="text-right"><p class="text-[10px] font-bold uppercase tracking-widest text-red-400">FONDO REPOSICIÓN (COSTOS)</p><p class="font-racing text-xl font-bold text-red-300" id="repoBalanceHeader">$0</p></div></div></div>
+            <div class="bg-white rounded-xl p-5 shadow-lg border-2 border-emerald-500 relative overflow-hidden mb-4"><div class="absolute top-0 right-0 -mt-2 -mr-2 w-20 h-20 bg-emerald-100 rounded-full opacity-50"></div><p class="text-[10px] font-bold uppercase tracking-widest text-emerald-600 mb-1">GANANCIA NETA A DIVIDIR</p><p class="font-racing text-4xl font-black text-emerald-600 leading-none" id="netProfitSplit">$0</p><p class="text-[10px] text-slate-400 mt-2 font-bold">(Ventas Totales - Costos Rep/Serv - Gastos Fijos)</p></div>
             <div class="grid grid-cols-2 gap-3 mb-4">
                 <div class="bg-white rounded-xl p-3 shadow-sm border border-slate-200"><h4 class="text-xs font-black text-slate-700 uppercase mb-2 border-b pb-1 flex items-center gap-1"><i data-lucide="wrench" class="w-3 h-3 text-indigo-500"></i> MANO OBRA</h4><div class="space-y-1 text-xs"><div class="flex justify-between text-slate-500"><span>Ingreso:</span><span id="laborGross" class="font-bold">$0</span></div><div class="flex justify-between text-red-500"><span>Gastos:</span><span id="laborExpenses" class="font-bold">-$0</span></div><div class="border-t pt-1 mt-1 flex justify-between text-slate-800"><span class="font-bold">NETO:</span><span id="laborNet" class="font-black">$0</span></div></div><p class="text-[9px] text-center text-slate-400 mt-2 bg-slate-50 rounded p-1">Reparto 70% Fer / 30% Jose</p></div>
-                <div class="bg-white rounded-xl p-3 shadow-sm border border-slate-200"><h4 class="text-xs font-black text-slate-700 uppercase mb-2 border-b pb-1 flex items-center gap-1"><i data-lucide="settings" class="w-3 h-3 text-emerald-500"></i> SERVICIOS</h4><div class="space-y-1 text-xs"><div class="flex justify-between text-slate-500"><span>Venta:</span><span id="partsGross" class="font-bold">$0</span></div><div class="flex justify-between text-amber-600"><span>Costo:</span><span id="partsCost" class="font-bold">-$0</span></div><div class="border-t pt-1 mt-1 flex justify-between text-slate-800"><span class="font-bold">GANANCIA:</span><span id="partsNet" class="font-black">$0</span></div></div><p class="text-[9px] text-center text-slate-400 mt-2 bg-slate-50 rounded p-1">Reparto 50% Fer / 50% Jose</p></div>
+                <div class="bg-white rounded-xl p-3 shadow-sm border border-slate-200"><h4 class="text-xs font-black text-slate-700 uppercase mb-2 border-b pb-1 flex items-center gap-1"><i data-lucide="settings" class="w-3 h-3 text-emerald-500"></i> SERV/REP</h4><div class="space-y-1 text-xs"><div class="flex justify-between text-slate-500"><span>Venta:</span><span id="partsGross" class="font-bold">$0</span></div><div class="flex justify-between text-amber-600"><span>Costo:</span><span id="partsCost" class="font-bold">-$0</span></div><div class="border-t pt-1 mt-1 flex justify-between text-slate-800"><span class="font-bold">GANANCIA:</span><span id="partsNet" class="font-black">$0</span></div></div><p class="text-[9px] text-center text-slate-400 mt-2 bg-slate-50 rounded p-1">Reparto 50% Fer / 50% Jose</p></div>
             </div>
-            <div class="mb-4"><h4 class="font-racing text-sm font-bold italic text-slate-700 mb-2 flex items-center gap-2 uppercase"><i data-lucide="wallet" class="w-4 h-4"></i> Disponibilidad Actual</h4><div class="grid grid-cols-2 gap-3"><div class="bg-emerald-900 text-white p-3 rounded-xl shadow-md"><p class="text-[9px] font-bold uppercase opacity-70">Efectivo en Caja</p><p class="font-racing text-xl font-black text-emerald-400" id="cashBalance">$0</p></div><div class="bg-blue-900 text-white p-3 rounded-xl shadow-md"><p class="text-[9px] font-bold uppercase opacity-70">Cuenta Bancaria</p><p class="font-racing text-xl font-black text-blue-400" id="bankBalance">$0</p></div></div></div>
+            <div class="mb-4"><h4 class="font-racing text-sm font-bold italic text-slate-700 mb-2 flex items-center gap-2 uppercase"><i data-lucide="wallet" class="w-4 h-4"></i> Disponibilidad Actual (Mes)</h4><div class="grid grid-cols-2 gap-3"><div class="bg-emerald-900 text-white p-3 rounded-xl shadow-md"><p class="text-[9px] font-bold uppercase opacity-70">Efectivo en Caja</p><p class="font-racing text-xl font-black text-emerald-400" id="cashBalance">$0</p></div><div class="bg-blue-900 text-white p-3 rounded-xl shadow-md"><p class="text-[9px] font-bold uppercase opacity-70">Cuenta Bancaria</p><p class="font-racing text-xl font-black text-blue-400" id="bankBalance">$0</p></div></div></div>
             <div class="grid grid-cols-1 gap-4 mb-4">
-                <div class="bg-white rounded-xl shadow-sm border border-indigo-200 overflow-hidden"><div class="bg-indigo-600 p-3 flex justify-between items-center text-white"><h4 class="font-racing font-bold italic uppercase">FERNANDO</h4></div><div class="p-4 text-center border-b border-indigo-50"><p class="text-[10px] uppercase font-bold text-slate-400">GANANCIA DEL MES</p><p class="font-black text-3xl text-indigo-600" id="statFer">$0</p><div class="flex justify-center gap-3 mt-2 text-[10px] font-bold text-slate-500"><span class="bg-indigo-50 px-2 py-1 rounded">M.O.: <span id="ferLaborSplit">$0</span></span><span class="bg-indigo-50 px-2 py-1 rounded">REP.: <span id="ferPartsSplit">$0</span></span></div></div><div class="grid grid-cols-2 text-center divide-x divide-indigo-50 bg-slate-50"><div class="p-3"><p class="text-[9px] uppercase font-bold text-slate-400">RETIRADO HIST.</p><p class="font-bold text-red-500 text-sm" id="statFerWd">$0</p></div><div class="p-3 bg-indigo-100"><p class="text-[9px] uppercase font-bold text-indigo-800">A COBRAR (SALDO)</p><p class="font-black text-lg text-indigo-900" id="balFer">$0</p></div></div></div>
-                <div class="bg-white rounded-xl shadow-sm border border-emerald-200 overflow-hidden"><div class="bg-emerald-600 p-3 flex justify-between items-center text-white"><h4 class="font-racing font-bold italic uppercase">JOSE</h4></div><div class="p-4 text-center border-b border-emerald-50"><p class="text-[10px] uppercase font-bold text-slate-400">GANANCIA DEL MES</p><p class="font-black text-3xl text-emerald-600" id="statMe">$0</p><div class="flex justify-center gap-3 mt-2 text-[10px] font-bold text-slate-500"><span class="bg-emerald-50 px-2 py-1 rounded">M.O.: <span id="meLaborSplit">$0</span></span><span class="bg-emerald-50 px-2 py-1 rounded">REP.: <span id="mePartsSplit">$0</span></span></div></div><div class="grid grid-cols-2 text-center divide-x divide-emerald-50 bg-slate-50"><div class="p-3"><p class="text-[9px] uppercase font-bold text-slate-400">RETIRADO HIST.</p><p class="font-bold text-red-500 text-sm" id="statMeWd">$0</p></div><div class="p-3 bg-emerald-100"><p class="text-[9px] uppercase font-bold text-emerald-800">A COBRAR (SALDO)</p><p class="font-black text-lg text-emerald-900" id="balMe">$0</p></div></div></div>
+                <div class="bg-white rounded-xl shadow-sm border border-indigo-200 overflow-hidden"><div class="bg-indigo-600 p-3 flex justify-between items-center text-white"><h4 class="font-racing font-bold italic uppercase">FERNANDO</h4></div><div class="p-4 text-center border-b border-indigo-50"><p class="text-[10px] uppercase font-bold text-slate-400">GANANCIA DEL MES</p><p class="font-black text-3xl text-indigo-600" id="statFer">$0</p><div class="flex justify-center gap-3 mt-2 text-[10px] font-bold text-slate-500"><span class="bg-indigo-50 px-2 py-1 rounded">M.O.: <span id="ferLaborSplit">$0</span></span><span class="bg-indigo-50 px-2 py-1 rounded">REP/SERV: <span id="ferPartsSplit">$0</span></span></div></div><div class="grid grid-cols-2 text-center divide-x divide-indigo-50 bg-slate-50"><div class="p-3"><p class="text-[9px] uppercase font-bold text-slate-400">RETIROS MES</p><p class="font-bold text-red-500 text-sm" id="statFerWd">$0</p></div><div class="p-3 bg-indigo-100"><p class="text-[9px] uppercase font-bold text-indigo-800">A COBRAR (SALDO)</p><p class="font-black text-lg text-indigo-900" id="balFer">$0</p></div></div></div>
+                <div class="bg-white rounded-xl shadow-sm border border-emerald-200 overflow-hidden"><div class="bg-emerald-600 p-3 flex justify-between items-center text-white"><h4 class="font-racing font-bold italic uppercase">JOSE</h4></div><div class="p-4 text-center border-b border-emerald-50"><p class="text-[10px] uppercase font-bold text-slate-400">GANANCIA DEL MES</p><p class="font-black text-3xl text-emerald-600" id="statMe">$0</p><div class="flex justify-center gap-3 mt-2 text-[10px] font-bold text-slate-500"><span class="bg-emerald-50 px-2 py-1 rounded">M.O.: <span id="meLaborSplit">$0</span></span><span class="bg-emerald-50 px-2 py-1 rounded">REP/SERV: <span id="mePartsSplit">$0</span></span></div></div><div class="grid grid-cols-2 text-center divide-x divide-emerald-50 bg-slate-50"><div class="p-3"><p class="text-[9px] uppercase font-bold text-slate-400">RETIROS MES</p><p class="font-bold text-red-500 text-sm" id="statMeWd">$0</p></div><div class="p-3 bg-emerald-100"><p class="text-[9px] uppercase font-bold text-emerald-800">A COBRAR (SALDO)</p><p class="font-black text-lg text-emerald-900" id="balMe">$0</p></div></div></div>
             </div>
             <div class="bg-amber-50 rounded-xl p-4 border-l-4 border-amber-500 shadow-sm mb-4 flex justify-between items-center"><div><p class="text-[10px] font-bold uppercase tracking-widest text-amber-600">CUENTAS POR COBRAR</p><p class="text-xs text-amber-700/60">Saldo pendiente del mes</p></div><p class="font-racing text-2xl font-black text-amber-600" id="pendingReceivable">$0</p></div>
             <div class="bg-slate-900 text-white p-3 rounded-lg flex justify-around mb-4" id="opsIndicators"><div class="text-center"><p class="text-[9px] text-slate-400 uppercase">VEHÍCULOS</p><p class="font-bold text-lg" id="countVehicles">0</p></div><div class="text-center"><p class="text-[9px] text-slate-400 uppercase">MOSTRADOR</p><p class="font-bold text-lg" id="countCounter">0</p></div></div>
@@ -224,7 +219,7 @@
     </nav>
 
     <!-- MODALS -->
-    <div id="paymentModal" class="fixed inset-0 bg-slate-900/90 hidden z-[60] flex items-center justify-center px-4 backdrop-blur-sm"><div class="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col max-h-[80vh]"><div class="p-4 bg-slate-900 text-white flex justify-between items-center"><h3 class="font-racing font-bold italic">COBROS <span class="text-red-500">CLIENTES</span></h3><button onclick="window.closePaymentModal()"><i data-lucide="x" class="w-5 h-5"></i></button></div><div class="p-5 text-center bg-slate-50 border-b border-slate-200"><p class="text-xs uppercase font-bold text-slate-400">SALDO PENDIENTE</p><p id="payBalance" class="text-3xl font-black text-slate-800 mt-1">$0</p></div><div class="flex-1 overflow-y-auto p-4 bg-white" id="paymentHistoryList"></div><div class="p-4 bg-slate-100 border-t border-slate-200 flex flex-col gap-2"><div class="flex justify-between items-center mb-2"><label class="text-xs font-bold text-slate-500">Monto y Medio:</label><label class="flex items-center gap-1 text-xs font-bold text-indigo-600 cursor-pointer"><input type="checkbox" id="payFullCheck" onchange="window.toggleFullPayModal()" class="w-4 h-4 rounded text-indigo-600"> SALDAR TOTAL</label></div><div class="flex gap-2"><select id="newPaymentMethod" class="inp text-sm font-bold text-slate-700 w-1/3"><option value="Efectivo">💵 Efvo</option><option value="Banco">🏦 Bco</option></select><input type="number" id="newPaymentInput" placeholder="MONTO $" class="inp font-bold text-lg w-2/3"></div><button onclick="window.addPayment()" class="bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg shadow-lg font-bold uppercase text-xs tracking-wide w-full mt-2">CONFIRMAR COBRO</button></div></div></div>
+    <div id="paymentModal" class="fixed inset-0 bg-slate-900/90 hidden z-[60] flex items-center justify-center px-4 backdrop-blur-sm"><div class="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col max-h-[80vh]"><div class="p-4 bg-slate-900 text-white flex justify-between items-center"><h3 class="font-racing font-bold italic">COBROS <span class="text-red-500">CLIENTES</span></h3><button onclick="window.closePaymentModal()"><i data-lucide="x" class="w-5 h-5"></i></button></div><div class="p-5 text-center bg-slate-50 border-b border-slate-200"><p class="text-xs uppercase font-bold text-slate-400">SALDO PENDIENTE</p><p id="payBalance" class="text-3xl font-black text-slate-800 mt-1">$0</p></div><div class="flex-1 overflow-y-auto p-4 bg-white" id="paymentHistoryList"></div><div class="p-4 bg-slate-100 border-t border-slate-200 flex flex-col gap-2"><div class="flex justify-between items-center mb-2"><label class="text-xs font-bold text-slate-500">Monto y Medio:</label><label class="flex items-center gap-1 text-xs font-bold text-indigo-600 cursor-pointer"><input type="checkbox" id="payFullCheck" onchange="window.toggleFullPayModal()" class="w-4 h-4 rounded text-indigo-600"> SALDAR TOTAL</label></div><div class="flex gap-2"><select id="newPaymentMethod" class="inp text-sm font-bold text-slate-700 w-1/3"><option value="Efectivo">💵 Efvo</option><option value="Banco Jose">🏦 Banco Jose</option><option value="Banco Fer">🏦 Banco Fer</option></select><input type="number" id="newPaymentInput" placeholder="MONTO $" class="inp font-bold text-lg w-2/3"></div><button onclick="window.addPayment()" class="bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg shadow-lg font-bold uppercase text-xs tracking-wide w-full mt-2">CONFIRMAR COBRO</button></div></div></div>
     <div id="viewerModal" class="fixed inset-0 bg-black/90 hidden z-[70] flex items-center justify-center px-4 backdrop-blur-sm"><div class="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"><div class="p-4 bg-slate-900 text-white flex justify-between items-center border-b-4 border-red-600"><div><h3 class="font-racing font-bold italic text-lg">DETALLE TRABAJO</h3><p class="text-[10px] text-gray-400" id="viewDate">Fecha</p></div><button onclick="document.getElementById('viewerModal').classList.add('hidden')"><i data-lucide="x" class="w-6 h-6"></i></button></div><div class="p-5 overflow-y-auto"><div class="mb-4 border-b border-gray-100 pb-4"><p class="text-xs font-bold text-gray-400 uppercase">CLIENTE</p><h4 class="font-bold text-xl text-slate-800" id="viewClient">Nombre</h4><p class="text-sm text-slate-600 font-mono" id="viewCar">Auto | Patente</p></div><div class="mb-4"><p class="text-xs font-bold text-gray-400 uppercase mb-2">TRABAJOS REALIZADOS</p><div id="viewItemsList" class="space-y-2 text-sm text-slate-700"></div></div><div class="flex justify-between items-center bg-slate-100 p-3 rounded-lg mb-4"><span class="font-bold text-slate-500">TOTAL</span><span class="font-black text-2xl text-slate-800" id="viewTotal">$0</span></div><div id="viewPaymentsList" class="text-xs space-y-1 border-t pt-2 text-gray-500"></div></div><div class="p-4 bg-slate-50 border-t flex gap-2"><button onclick="window.printOrderFromView()" class="w-full bg-red-600 text-white py-3 rounded-lg font-bold uppercase flex justify-center items-center gap-2"><i data-lucide="file-text" class="w-4 h-4"></i> IMPRIMIR PDF</button></div></div></div>
 
     <script type="module">
@@ -238,7 +233,6 @@
         let tempItems=[], editingOrderId=null, editingItemIndex=-1, activePaymentId=null, editingWithdrawalId=null, currentListFilter='all', viewingOrderId=null;
         let editingExpenseId = null;
         const today = new Date(); 
-        // Corrección de zona horaria para input date
         const localDate = new Date(today.getTime() - (today.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
         document.getElementById('date').value = localDate; 
         document.getElementById('wdDate').value = localDate; 
@@ -246,7 +240,7 @@
         document.getElementById('filterMonth').value = currMonthStr; 
         document.getElementById('dashMonth').value = currMonthStr;
 
-        // --- HELPER FUNCTIONS (GLOBAL) ---
+        // --- HELPER FUNCTIONS ---
         window.safeSetText = (id, text) => { const el = document.getElementById(id); if(el) el.innerText = text; };
         window.formatMoney = (n) => { return new Intl.NumberFormat('es-AR', {style:'currency', currency:'ARS', maximumFractionDigits:0}).format(n); };
         window.exportToExcel = () => { let csv="ID,FECHA,CLIENTE,DNI,AUTO,TOTAL,ESTADO\n"; orders.forEach(o=>{csv+=`${o.customId||''},${o.date},${o.client.name},${o.client.dni||''},${o.client.model},${o.total},${o.status}\n`}); const link=document.createElement("a");link.href="data:text/csv;charset=utf-8,"+encodeURI(csv);link.download="Jofert_Data.csv";document.body.appendChild(link);link.click(); };
@@ -303,7 +297,6 @@
             if (currentListFilter === 'debt') visibleOrders = visibleOrders.filter(o => o.docType !== 'quote' && (o.status === 'pending' || o.status === 'partial'));
             else if (currentListFilter === 'paid') visibleOrders = visibleOrders.filter(o => o.docType !== 'quote' && o.status === 'paid');
             else if (currentListFilter === 'quote') visibleOrders = visibleOrders.filter(o => o.docType === 'quote');
-
             if (visibleOrders.length === 0) { l.innerHTML = '<p class="text-center text-sm text-slate-400 py-10 font-bold uppercase tracking-widest">NO HAY REGISTROS EN ESTA SECCIÓN</p>'; return; }
             l.innerHTML = visibleOrders.map(o => createOrderCard(o)).join('');
             lucide.createIcons();
@@ -315,61 +308,20 @@
             let badge = isQuote ? '<span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-[10px] font-black tracking-wide">PRESUPUESTO</span>' : `<span class="bg-slate-100 px-1 rounded font-mono text-[10px] text-slate-500">${o.customId || '#'}</span>`;
             let actionButtons = isQuote ? `<button onclick="window.convertToOrder('${o.id}')" class="flex-1 bg-green-600 text-white rounded py-1.5 font-bold shadow-sm hover:bg-green-700 flex justify-center items-center gap-1 text-xs"><i data-lucide="check-circle" class="w-4 h-4"></i> APROBAR</button>` : `<button onclick="window.openPaymentModal('${o.id}')" class="flex-1 bg-white border border-slate-300 rounded py-1.5 font-bold text-slate-600 shadow-sm hover:bg-slate-50 text-xs">COBRAR</button>`;
             const clientName = o.client.name.toUpperCase();
-            
             let waButton = `<button onclick="window.sendWhatsApp('${o.id}')" class="flex-1 bg-green-500 text-white rounded py-1.5 font-bold shadow-sm hover:bg-green-600 flex justify-center items-center gap-1 text-xs"><i data-lucide="message-circle" class="w-4 h-4"></i></button>`;
-
             let totalCost = 0; if (o.items) o.items.forEach(i => { if (i.type !== 'labor') totalCost += (i.buyPrice || 0); });
             const margin = o.total - totalCost;
-
-            return `<div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm border-l-4 ${borderClass} relative uppercase-force">
-                ${isQuote ? '<div class="absolute top-2 right-2 opacity-10"><i data-lucide="file-text" class="w-12 h-12"></i></div>' : ''}
-                <div class="flex justify-between items-start mb-2">
-                    <div><div class="flex items-center gap-2 mb-1">${badge}<h4 class="font-bold text-slate-800">${clientName}</h4></div><p class="text-xs text-slate-500 font-bold">${(o.client.model || '').toUpperCase()} | ${(o.client.plate || '').toUpperCase()}</p><p class="text-[10px] text-slate-400 mt-1">${new Date(o.date).toLocaleDateString()}</p></div>
-                    <div class="text-right relative z-10"><span class="block font-black text-slate-800 text-lg">${window.formatMoney(o.total)}</span><span class="text-[10px] font-bold text-green-600 block">MARGEN: ${window.formatMoney(margin)}</span>${!isQuote && (o.total - (o.paidAmount || 0)) > 1 ? `<span class="text-[10px] text-red-500 font-bold block mt-1">FALTA ${window.formatMoney(o.total - (o.paidAmount || 0))}</span>` : ''}</div>
-                </div>
-                <details class="text-xs relative z-10"><summary class="cursor-pointer text-slate-400 py-1 border-t border-dashed mt-2 flex justify-between"><span>OPCIONES</span><i data-lucide="chevron-down" class="w-3 h-3 rotate-icon"></i></summary><div class="pt-2 space-y-1 bg-slate-50 -mx-4 -mb-4 p-4 mt-1 border-t border-slate-100">${o.items.map(i => `<div class="flex justify-between"><span>${i.desc.toUpperCase()}</span><span class="font-bold">${window.formatMoney(i.sellPrice)}</span></div>`).join('')}<div class="flex gap-2 mt-3 pt-2 border-t border-slate-200"><button onclick="window.printOrder('${o.id}')" class="p-1.5 bg-red-50 text-red-600 rounded border border-red-100 hover:bg-red-100" title="PDF"><i data-lucide="file-text" class="w-4 h-4"></i></button>${waButton}${actionButtons}<button onclick="window.loadOrderForEdit('${o.id}')" class="p-1.5 bg-blue-50 text-blue-600 rounded border border-blue-100 hover:bg-blue-100" title="EDITAR"><i data-lucide="pencil" class="w-4 h-4"></i></button><button onclick="window.deleteOrder('${o.id}')" class="p-1.5 bg-gray-50 text-gray-400 rounded border border-gray-100 hover:text-red-500" title="ELIMINAR"><i data-lucide="trash" class="w-4 h-4"></i></button></div></div></details>
-            </div>`;
+            return `<div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm border-l-4 ${borderClass} relative uppercase-force">${isQuote ? '<div class="absolute top-2 right-2 opacity-10"><i data-lucide="file-text" class="w-12 h-12"></i></div>' : ''}<div class="flex justify-between items-start mb-2"><div><div class="flex items-center gap-2 mb-1">${badge}<h4 class="font-bold text-slate-800">${clientName}</h4></div><p class="text-xs text-slate-500 font-bold">${(o.client.model || '').toUpperCase()} | ${(o.client.plate || '').toUpperCase()}</p><p class="text-[10px] text-slate-400 mt-1">${new Date(o.date).toLocaleDateString()}</p></div><div class="text-right relative z-10"><span class="block font-black text-slate-800 text-lg">${window.formatMoney(o.total)}</span><span class="text-[10px] font-bold text-green-600 block">MARGEN: ${window.formatMoney(margin)}</span>${!isQuote && (o.total - (o.paidAmount || 0)) > 1 ? `<span class="text-[10px] text-red-500 font-bold block mt-1">FALTA ${window.formatMoney(o.total - (o.paidAmount || 0))}</span>` : ''}</div></div><details class="text-xs relative z-10"><summary class="cursor-pointer text-slate-400 py-1 border-t border-dashed mt-2 flex justify-between"><span>OPCIONES</span><i data-lucide="chevron-down" class="w-3 h-3 rotate-icon"></i></summary><div class="pt-2 space-y-1 bg-slate-50 -mx-4 -mb-4 p-4 mt-1 border-t border-slate-100">${o.items.map(i => `<div class="flex justify-between"><span>${i.desc.toUpperCase()}</span><span class="font-bold">${window.formatMoney(i.sellPrice)}</span></div>`).join('')}<div class="flex gap-2 mt-3 pt-2 border-t border-slate-200"><button onclick="window.printOrder('${o.id}')" class="p-1.5 bg-red-50 text-red-600 rounded border border-red-100 hover:bg-red-100" title="PDF"><i data-lucide="file-text" class="w-4 h-4"></i></button>${waButton}${actionButtons}<button onclick="window.loadOrderForEdit('${o.id}')" class="p-1.5 bg-blue-50 text-blue-600 rounded border border-blue-100 hover:bg-blue-100" title="EDITAR"><i data-lucide="pencil" class="w-4 h-4"></i></button><button onclick="window.deleteOrder('${o.id}')" class="p-1.5 bg-gray-50 text-gray-400 rounded border border-gray-100 hover:text-red-500" title="ELIMINAR"><i data-lucide="trash" class="w-4 h-4"></i></button></div></div></details></div>`;
         }
 
         window.renderExpensesList = () => {
-            const list = document.getElementById('manageExpensesList'); 
-            const financeList = document.getElementById('financeExpensesList');
-            
-            // Logic for Expenses Tab List
-            if(list) {
-                const showAll = document.getElementById('filterManageExpenses') && document.getElementById('filterManageExpenses').value === 'all';
-                const m = document.getElementById('dashMonth').value;
-                let displayExp = expenses;
-                if (!showAll) { displayExp = expenses.filter(e => e.date === m); }
-                
-                if(displayExp.length === 0) { 
-                    list.innerHTML = '<p class="text-center text-xs text-slate-400">Sin gastos</p>'; 
-                } else {
-                    list.innerHTML = displayExp.map(e => `
-                        <div class="flex justify-between items-center text-xs p-3 bg-slate-50 border rounded-lg border-slate-200 hover:bg-white transition">
-                            <div>
-                                <span class="font-bold text-slate-800 block uppercase text-sm">${e.desc}</span>
-                                <span class="text-[10px] text-slate-400">${e.date} | ${e.method||'Efvo'}</span>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <span class="font-black text-red-600 text-sm">-${window.formatMoney(e.amount)}</span>
-                                <button onclick="window.loadExpenseForEdit('${e.id}')" class="p-2 bg-white border border-slate-200 rounded text-blue-400 hover:text-blue-600 hover:border-blue-300 transition"><i data-lucide="pencil" class="w-4 h-4"></i></button>
-                                <button onclick="window.deleteExpense('${e.id}')" class="p-2 bg-white border border-slate-200 rounded text-slate-400 hover:text-red-500 hover:border-red-200 transition"><i data-lucide="trash" class="w-4 h-4"></i></button>
-                            </div>
-                        </div>`).join('');
-                }
-            }
-
-            // Logic for Finance Tab List (Read Only, Current Month)
-            if(financeList) {
-                 const m = document.getElementById('dashMonth').value;
-                 const mExpenses = expenses.filter(e => e.date === m);
-                 if(mExpenses.length === 0) {
-                     financeList.innerHTML = '<p class="text-center text-xs text-slate-400">Sin gastos este mes</p>';
-                 } else {
-                     financeList.innerHTML = mExpenses.map(e => `<div class="flex justify-between items-center text-xs p-2 bg-slate-50 border rounded border-slate-200"><div><span class="font-bold text-slate-700 block uppercase">${e.desc}</span></div><div class="flex items-center gap-2"><span class="font-bold text-red-500">-${window.formatMoney(e.amount)}</span></div></div>`).join('');
-                 }
-            }
+            const list = document.getElementById('manageExpensesList'); if(!list) return;
+            const showAll = document.getElementById('filterManageExpenses') && document.getElementById('filterManageExpenses').value === 'all';
+            const m = document.getElementById('dashMonth').value;
+            let displayExp = expenses;
+            if (!showAll) { displayExp = expenses.filter(e => e.date === m); }
+            if(displayExp.length === 0) { list.innerHTML = '<p class="text-center text-xs text-slate-400">Sin gastos</p>'; return; }
+            list.innerHTML = displayExp.map(e => `<div class="flex justify-between items-center text-xs p-3 bg-slate-50 border rounded-lg border-slate-200 hover:bg-white transition"><div><span class="font-bold text-slate-800 block uppercase text-sm">${e.desc}</span><span class="text-[10px] text-slate-400">${e.date} | ${e.method||'Efvo'}</span></div><div class="flex items-center gap-2"><span class="font-black text-red-600 text-sm">-${window.formatMoney(e.amount)}</span><button onclick="window.loadExpenseForEdit('${e.id}')" class="p-2 bg-white border border-slate-200 rounded text-blue-400 hover:text-blue-600 hover:border-blue-300 transition"><i data-lucide="pencil" class="w-4 h-4"></i></button><button onclick="window.deleteExpense('${e.id}')" class="p-2 bg-white border border-slate-200 rounded text-slate-400 hover:text-red-500 hover:border-red-200 transition"><i data-lucide="trash" class="w-4 h-4"></i></button></div></div>`).join('');
             lucide.createIcons();
         }
 
@@ -379,62 +331,71 @@
             const mOrders = orders.filter(o => o.date.startsWith(m) && o.docType !== 'quote');
             const mExpenses = expenses.filter(e => e.date === m);
             let grossTotal=0, laborGross=0, partsGross=0, partsCost=0, pendingReceivable=0, vehiclesCount=0, counterCount=0;
+            
+            // Repo Fund Logic: ONLY Services add to Repo Fund. Parts just reduce Profit.
+            let repoFund = 0;
+
             mOrders.forEach(o => { 
-                o.items.forEach(i => { grossTotal += i.sellPrice; if(i.type === 'labor') { laborGross += i.sellPrice; } else { partsGross += i.sellPrice; partsCost += (i.buyPrice || 0); } });
+                o.items.forEach(i => { 
+                    grossTotal += i.sellPrice; 
+                    if(i.type === 'labor') { 
+                        laborGross += i.sellPrice; 
+                    } else { 
+                        // Parts & Services Logic
+                        partsGross += i.sellPrice; 
+                        const cost = (i.buyPrice || 0);
+                        partsCost += cost; // Total Cost (for Net Profit Calc)
+                        
+                        // Special Request: Only Service type adds to Repo Fund
+                        if (i.type === 'service') {
+                            repoFund += cost;
+                        }
+                        // Parts cost is subtracted from profit but not added to repo fund display
+                    } 
+                });
                 const paid = o.paidAmount || 0; if (paid < o.total) pendingReceivable += (o.total - paid);
                 if(o.client.model === 'VENTA MOSTRADOR') counterCount++; else vehiclesCount++;
             });
             
             const fixedExpenses = mExpenses.reduce((sum, e) => sum + e.amount, 0);
-            const repoFund = partsCost;
-            const netLabor = laborGross - fixedExpenses;
-            const netParts = partsGross - partsCost;
-            const netProfitToSplit = netLabor + netParts;
-            const ferLaborShare = netLabor * 0.70; const ferPartsShare = netParts * 0.50; const ferTotalMonth = ferLaborShare + ferPartsShare; const ferProfit = ferTotalMonth;
-            const joseLaborShare = netLabor * 0.30; const josePartsShare = netParts * 0.50; const joseTotalMonth = joseLaborShare + josePartsShare; const joseProfit = joseTotalMonth;
-
-            let grandTotalFer=0, grandTotalJose=0, cashIn=0, bankIn=0, cashOut=0, bankOut=0;
-            orders.forEach(o => { if(o.docType === 'quote') return; (o.payments || []).forEach(p => { if(p.method === 'Banco') bankIn += p.amount; else cashIn += p.amount; }); });
             
-            // Balance Logic (Strictly Monthly for Partners + New Payment Methods)
+            // Net Labor
+            const netLabor = laborGross - fixedExpenses;
+            // Net Parts/Services
+            const netParts = partsGross - partsCost;
+            
+            // Split Logic
+            const ferLaborShare = netLabor * 0.70; const ferPartsShare = netParts * 0.50; const ferProfit = ferLaborShare + ferPartsShare;
+            const joseLaborShare = netLabor * 0.30; const josePartsShare = netParts * 0.50; const joseProfit = joseLaborShare + josePartsShare;
+            const netProfitToSplit = netLabor + netParts;
+
+            // Cash/Bank Logic (Monthly Flow)
+            let cashIn = 0, bankIn = 0, cashOut = 0, bankOut = 0;
+            // Cash In from Orders (Monthly)
+            mOrders.forEach(o => {
+                (o.payments || []).forEach(p => {
+                    if(p.method === 'Efectivo') cashIn += p.amount;
+                    else if(p.method === 'Banco') bankIn += p.amount;
+                    // Jose/Fer banks are withdrawals, not company cash
+                });
+            });
+            // Withdrawals (Monthly)
             const mWithdrawals = withdrawals.filter(w => w.date.startsWith(m));
             let ferWd = 0, joseWd = 0;
-            
-            // 1. Manual Withdrawals
             mWithdrawals.forEach(w => {
-                if(w.person === 'Fer') ferWd += w.amount;
-                else joseWd += w.amount;
+                if(w.person === 'Fer') ferWd += w.amount; else joseWd += w.amount;
+                if(w.method === 'Banco') bankOut += w.amount; else cashOut += w.amount;
             });
-
-            // 2. Automatic Withdrawals from "Banco Jose" / "Banco Fer" payments in ORDERS of this month
+            // Expenses Out (Monthly)
+            mExpenses.forEach(e => {
+                 if(e.method === 'Banco') bankOut += e.amount; else cashOut += e.amount;
+            });
+            // Auto Withdrawals from Orders (Monthly)
             mOrders.forEach(o => {
                 (o.payments || []).forEach(p => {
                     if(p.method === 'Banco Jose') joseWd += p.amount;
                     if(p.method === 'Banco Fer') ferWd += p.amount;
                 });
-            });
-
-            // Global Cash/Bank (Historical - Calculated CORRECTLY for Monthly View)
-            // FIX: Cash/Bank should reflect month-only flow for proper reconciliation with month income
-            // OR: We show Total Assets (historical) but clarify. 
-            // User complaint: "Cash > Income is impossible". So we switch to MONTHLY CASH FLOW.
-            
-            cashIn = 0; bankIn = 0; cashOut = 0; bankOut = 0;
-
-            // Cash In (Monthly)
-            mOrders.forEach(o => {
-                (o.payments || []).forEach(p => {
-                    if(p.method === 'Efectivo') cashIn += p.amount;
-                    else if(p.method === 'Banco') bankIn += p.amount;
-                });
-            });
-
-            // Cash Out (Monthly Withdrawals + Monthly Expenses)
-            mWithdrawals.forEach(w => {
-                 if(w.method === 'Banco') bankOut += w.amount; else cashOut += w.amount;
-            });
-            mExpenses.forEach(e => {
-                 if(e.method === 'Banco') bankOut += e.amount; else cashOut += e.amount;
             });
 
             window.safeSetText('grossIncomeDisplay', window.formatMoney(grossTotal));
@@ -447,20 +408,16 @@
             window.safeSetText('partsGross', window.formatMoney(partsGross));
             window.safeSetText('partsCost', `-${window.formatMoney(partsCost)}`);
             window.safeSetText('partsNet', window.formatMoney(netParts));
-            
-            // Partner Stats (Monthly)
             window.safeSetText('statFer', window.formatMoney(ferProfit));
             window.safeSetText('ferLaborSplit', window.formatMoney(ferLaborShare));
             window.safeSetText('ferPartsSplit', window.formatMoney(ferPartsShare));
             window.safeSetText('statFerWd', `-${window.formatMoney(ferWd)}`);
             window.safeSetText('balFer', window.formatMoney(ferProfit - ferWd));
-
             window.safeSetText('statMe', window.formatMoney(joseProfit));
             window.safeSetText('meLaborSplit', window.formatMoney(joseLaborShare));
             window.safeSetText('mePartsSplit', window.formatMoney(josePartsShare));
             window.safeSetText('statMeWd', `-${window.formatMoney(joseWd)}`);
             window.safeSetText('balMe', window.formatMoney(joseProfit - joseWd));
-
             window.safeSetText('expensesTotal', window.formatMoney(fixedExpenses));
             window.safeSetText('cashBalance', window.formatMoney(cashIn - cashOut));
             window.safeSetText('bankBalance', window.formatMoney(bankIn - bankOut));
@@ -468,17 +425,12 @@
             if(document.getElementById('opsIndicators')) document.getElementById('opsIndicators').classList.remove('hidden');
             window.safeSetText('countVehicles', vehiclesCount);
             window.safeSetText('countCounter', counterCount);
-            
-            window.renderExpensesList(); // Update the list view too
+            const financeExpList = document.getElementById('financeExpensesList');
+            if(financeExpList) { financeExpList.innerHTML = mExpenses.map(e => `<div class="flex justify-between items-center text-xs p-2 bg-slate-50 border rounded border-slate-200"><div><span class="font-bold text-slate-700 block uppercase">${e.desc}</span></div><div class="flex items-center gap-2"><span class="font-bold text-red-500">-${window.formatMoney(e.amount)}</span></div></div>`).join(''); }
         };
 
         // --- ACTIONS ---
-        window.deleteOrder = async (id) => {
-            if(confirm("¿ELIMINAR ESTE REGISTRO? Esta acción no se puede deshacer.")) {
-                try { await deleteDoc(doc(db, "orders", id)); } catch (error) { console.error("Error", error); alert("Error al eliminar."); }
-            }
-        };
-
+        window.deleteOrder = async (id) => { if(confirm("¿ELIMINAR ESTE REGISTRO? Esta acción no se puede deshacer.")) { try { await deleteDoc(doc(db, "orders", id)); } catch (error) { console.error("Error", error); alert("Error al eliminar."); } } };
         window.searchProducts = (q) => { q = q.toUpperCase(); const drop = document.getElementById('productDropdown'); if (q.length < 2) { drop.classList.add('hidden'); return; } const matches = products.filter(p => p.desc.includes(q) || (p.code && p.code.includes(q))); if (matches.length === 0) { drop.classList.add('hidden'); return; } drop.innerHTML = matches.map(p => `<div onclick="window.selectProduct('${p.desc}', ${p.cost}, '${p.code || ''}')"><span class="text-xs text-gray-400 font-mono mr-2">${p.code || '#'}</span> ${p.desc} <span class="float-right text-gray-400">$${p.cost}</span></div>`).join(''); drop.classList.remove('hidden'); };
         window.selectProduct = (desc, cost, code) => { document.getElementById('itemDesc').value = desc; document.getElementById('itemType').value = 'part'; window.toggleCostInput(); document.getElementById('itemBuyPrice').value = cost; document.getElementById('productDropdown').classList.add('hidden'); document.getElementById('itemMargin').focus(); };
         window.calcPriceFromMargin = () => { const cost = parseFloat(document.getElementById('itemBuyPrice').value) || 0; const margin = parseFloat(document.getElementById('itemMargin').value) || 0; if (cost > 0) { const sell = cost * (1 + (margin / 100)); document.getElementById('itemSellPrice').value = Math.round(sell); } };
@@ -504,12 +456,16 @@
 
             img.onload = () => {
                 doc.addImage(img, 'PNG', 10, 10, 25, 25);
-                const headerColor = isQuote ? [245, 158, 11] : [220, 38, 38]; 
-                doc.setFillColor(20, 20, 20); 
-                doc.rect(0, 38, 210, 2, 'F'); 
-                doc.addImage(img, 'PNG', 10, 10, 25, 25);
+                doc.setFillColor(220, 38, 38); // Brand Red
+                doc.rect(0, 38, 210, 2, 'F'); // Thin separator line
 
-                doc.setTextColor(220, 38, 38); 
+                // Watermark
+                doc.saveGraphicsState();
+                doc.setGState(new doc.GState({opacity: 0.05}));
+                doc.addImage(img, 'PNG', 55, 80, 100, 100);
+                doc.restoreGraphicsState();
+
+                doc.setTextColor(30, 30, 30); 
                 doc.setFontSize(22); 
                 doc.setFont("helvetica", "bolditalic"); 
                 doc.text("JOFERT RACING", 40, 20); 
@@ -522,18 +478,39 @@
 
                 doc.setTextColor(255, 255, 255); doc.setFontSize(12); doc.setFont("helvetica", "bold");
                 const title = isQuote ? "PRESUPUESTO OFICIAL" : "ORDEN DE TRABAJO"; 
-                doc.text(title, 105, 45, null, null, "center");
+                doc.text(title, 165, 19, null, null, "center");
+                doc.setFontSize(10);
+                doc.text(`N°: ${o.customId}`, 165, 26, null, null, "center");
 
-                doc.setTextColor(0,0,0); doc.setFontSize(10); 
-                doc.text(isQuote ? "PRESUPUESTO" : `ORDEN N°: ${o.customId}`, 14, 60); 
-                doc.text(`FECHA: ${new Date(o.date).toLocaleDateString()}`, 150, 60); 
+                doc.setTextColor(0,0,0); 
+                doc.setFontSize(10); 
+                doc.text(`FECHA: ${new Date(o.date).toLocaleDateString()}`, 14, 50); 
                 
-                doc.setDrawColor(200); doc.line(14,63,196,63); 
-                doc.text("CLIENTE", 14, 70); doc.setFont("helvetica", "normal"); doc.text(`Nombre: ${o.client.name}`, 14, 76); doc.text(`DNI/CUIT: ${o.client.dni||'-'}`, 14, 82); doc.text(`Tel: ${o.client.phone}`, 14, 88); 
-                doc.setFont("helvetica", "bold"); doc.text("VEHÍCULO", 110, 70); doc.setFont("helvetica", "normal"); doc.text(`Modelo: ${o.client.model}`, 110, 76); doc.text(`Patente: ${o.client.plate}`, 110, 82); doc.text(`KM: ${o.client.km || '-'}`, 110, 88); 
+                doc.setDrawColor(200); 
+                doc.setFillColor(245, 245, 245);
+                doc.rect(14, 55, 182, 25, 'F');
                 
+                doc.setFont("helvetica", "bold");
+                doc.text("CLIENTE:", 18, 62); 
+                doc.text("VEHÍCULO:", 110, 62);
+
+                doc.setFont("helvetica", "normal"); 
+                doc.text(`${o.client.name}`, 18, 68); 
+                doc.text(`DNI: ${o.client.dni||'-'}  |  Tel: ${o.client.phone}`, 18, 74); 
+                
+                doc.text(`${o.client.model}`, 110, 68); 
+                doc.text(`Patente: ${o.client.plate}  |  KM: ${o.client.km || '-'}`, 110, 74); 
+
                 const body = o.items.map(i => [i.desc, i.type==='labor'?'Mano de Obra':'Repuesto', window.formatMoney(i.sellPrice)]); 
-                doc.autoTable({ startY: 95, head: [['Descripción', 'Tipo', 'Importe']], body: body, theme: 'grid', headStyles: { fillColor: [220, 38, 38], textColor: 255, fontStyle: 'bold' } }); 
+                
+                doc.autoTable({ 
+                    startY: 90, 
+                    head: [['Descripción', 'Tipo', 'Importe']], 
+                    body: body, 
+                    theme: 'grid', 
+                    headStyles: { fillColor: [220, 38, 38], textColor: 255, fontStyle: 'bold' },
+                    styles: { fontSize: 10, cellPadding: 3 }
+                }); 
                 
                 const finalY = doc.lastAutoTable.finalY + 10; 
                 doc.setFontSize(14); doc.setFont("helvetica", "bold"); doc.setTextColor(0,0,0);
@@ -549,7 +526,7 @@
             img.onerror = () => { alert("Logo no encontrado, imprimiendo sin imagen."); };
         };
         window.printOrder = (id) => { viewingOrderId = id; window.printOrderFromView(); };
-        
+
         window.addExpenseFromTab = async () => { const d=document.getElementById('dashMonth').value, desc=document.getElementById('manageExpenseDesc').value.toUpperCase(), a=parseFloat(document.getElementById('manageExpenseAmount').value), m=document.getElementById('manageExpenseMethod').value; if(!desc||isNaN(a)) return alert("Datos incompletos"); 
             const data = {date:d,desc,amount:a,method:m,createdAt:new Date()};
             if (editingExpenseId) { await updateDoc(doc(db, "expenses", editingExpenseId), data); window.cancelEditExpense(); } else { await addDoc(collection(db,"expenses"), data); }
@@ -570,20 +547,29 @@
         window.delTemp = (i) => { tempItems.splice(i,1); renderTempList(); };
         window.saveOrder = async () => { const isCounter = document.getElementById('isCounterSale').checked; let client = {}; if(isCounter) { client = { name: document.getElementById('clientName').value.toUpperCase() || "CLIENTE MOSTRADOR", phone: "", dni: "", model: "VENTA MOSTRADOR", plate: "-", km: "" }; } else { client = { name: document.getElementById('clientName').value.toUpperCase(), phone: document.getElementById('clientPhone').value, dni: document.getElementById('clientDni').value.toUpperCase(), model: document.getElementById('vehicleModel').value.toUpperCase(), plate: document.getElementById('vehiclePlate').value.toUpperCase(), km: document.getElementById('vehicleKm').value }; } if(!client.name || tempItems.length===0) return alert("FALTA CLIENTE O ITEMS"); const total = tempItems.reduce((a,b)=>a+b.sellPrice,0); const date = document.getElementById('date').value; const isQuote = document.getElementById('isQuoteToggle').checked; const docType = isQuote ? 'quote' : 'order'; let payments=[], paidAmount=0, status='pending'; if(editingOrderId) { const old = orders.find(o => o.id === editingOrderId); if(old) { payments = old.payments || []; paidAmount = old.paidAmount || 0; if (!isQuote) status = paidAmount >= total - 1 ? 'paid' : (paidAmount > 0 ? 'partial' : 'pending'); } } else if (!isQuote) { const full=document.getElementById('checkPaidFull').checked, init=parseFloat(document.getElementById('initialPayment').value); const initMethod = document.getElementById('initialPaymentMethod').value; if(full){ paidAmount=total; payments.push({amount:total, date:new Date().toISOString(), method: initMethod}); } else if(!isNaN(init)&&init>0){ paidAmount=init; payments.push({amount:init, date:new Date().toISOString(), method: initMethod}); } status = paidAmount>=total-1?'paid':(paidAmount>0?'partial':'pending'); } let customId = ""; if(editingOrderId && !isQuote) { const old = orders.find(o=>o.id===editingOrderId); customId = old.docType === 'quote' && !isQuote ? generateId(date) : old.customId; } else if (!isQuote) { customId = generateId(date); } const data = { client, date, items: tempItems, total, docType, customId, payments, paidAmount, status, updatedAt:new Date() }; if(editingOrderId) await updateDoc(doc(db,"orders",editingOrderId), data); else await addDoc(collection(db,"orders"), data); window.resetForm(); };
         function generateId(date) { const m = date.substring(0,7); const max = orders.filter(o=>o.docType!=='quote' && o.customId && o.customId.startsWith(m)).reduce((m,o)=>{const s=parseInt(o.customId.split('-')[2]);return s>m?s:m},0); return `${m}-${String(max+1).padStart(3,'0')}`; }
-        window.convertToOrder = async (id) => { if(!confirm("¿APROBAR PRESUPUESTO Y CREAR ORDEN DE TRABAJO?")) return; const newId = generateId(new Date().toISOString()); await updateDoc(doc(db,"orders",id), { docType: 'order', customId: newId, status: 'pending', date: new Date().toISOString().substring(0,10), updatedAt: new Date() }); };
         
-        // --- GESTIÓN DE PAGOS SEGURA ---
-        window.openCurrentOrderPayment = () => {
-            if (editingOrderId) window.openPaymentModal(editingOrderId);
+        window.convertToOrder = async (id) => { 
+            if(!confirm("¿APROBAR PRESUPUESTO Y CREAR ORDEN DE TRABAJO?")) return; 
+            
+            // Generate new Order ID (since quotes don't have one)
+            const todayStr = new Date().toISOString().substring(0,10);
+            const newCustomId = generateId(todayStr);
+            
+            await updateDoc(doc(db,"orders",id), { 
+                docType: 'order', 
+                customId: newCustomId, 
+                status: 'pending', 
+                date: todayStr, // Update date to approval date
+                updatedAt: new Date() 
+            });
+            
+            // Auto-switch view to "Trabajos > A Cobrar" so user sees the new order
+            currentListFilter = 'debt';
+            document.getElementById('filter-debt').click(); // Simulate click to update UI state
+            window.renderApp();
+            alert(`¡Presupuesto aprobado! Orden N° ${newCustomId} creada.`);
         };
-
-        window.openPaymentModal=(id)=>{activePaymentId=id;const o=orders.find(x=>x.id===id);if(!o)return;document.getElementById('payBalance').innerText=window.formatMoney(o.total-(o.paidAmount||0));document.getElementById('paymentHistoryList').innerHTML=(o.payments||[]).map((p,i)=>`<div class="flex justify-between p-2 border-b text-sm"><span>${new Date(p.date).toLocaleDateString()}</span><span class="font-bold">${window.formatMoney(p.amount)}</span><span class="text-xs text-gray-400 ml-2">${p.method||'Efectivo'}</span><button onclick="window.delPay(${i})" class="text-red-500 ml-auto"><i data-lucide="trash" class="w-3 h-3"></i></button></div>`).join('');document.getElementById('paymentModal').classList.remove('hidden');lucide.createIcons();};
-        window.closePaymentModal=()=>document.getElementById('paymentModal').classList.add('hidden');
-        window.addPayment=async()=>{const v=parseFloat(document.getElementById('newPaymentInput').value); const m=document.getElementById('newPaymentMethod').value; if(isNaN(v))return;const o=orders.find(x=>x.id===activePaymentId);const np=[...(o.payments||[]),{amount:v,date:new Date().toISOString(),method:m}];const pa=np.reduce((a,b)=>a+b.amount,0);await updateDoc(doc(db,"orders",activePaymentId),{payments:np,paidAmount:pa,status:pa>=o.total-1?'paid':'partial'});document.getElementById('newPaymentInput').value='';window.closePaymentModal();}; // Cerrar modal tras pago
-        window.toggleFullPayModal = () => { const check = document.getElementById('payFullCheck'); const input = document.getElementById('newPaymentInput'); if (check.checked) { const o = orders.find(x => x.id === activePaymentId); if(o) { const bal = o.total - (o.paidAmount || 0); input.value = bal; input.disabled = true; } } else { input.value = ''; input.disabled = false; input.focus(); } };
-        window.delPay=async(i)=>{if(!confirm("¿BORRAR PAGO?"))return;const o=orders.find(x=>x.id===activePaymentId);const np=[...o.payments];np.splice(i,1);const pa=np.reduce((a,b)=>a+b.amount,0);await updateDoc(doc(db,"orders",activePaymentId),{payments:np,paidAmount:pa,status:pa>=o.total-1?'paid':(pa>0?'partial':'pending')});window.openPaymentModal(activePaymentId);};
-        window.deleteOrder = async (id) => { if(confirm("¿ELIMINAR ESTE REGISTRO? Esta acción no se puede deshacer.")) { try { await deleteDoc(doc(db, "orders", id)); } catch (error) { console.error("Error al eliminar:", error); alert("Hubo un error al eliminar."); } } };
-
+        
         // --- INIT ---
         async function init() { await initApp(); }
         window.onload = init;
