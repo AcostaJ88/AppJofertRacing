@@ -176,7 +176,7 @@
 
         <!-- 5. GASTOS -->
         <div id="view-expenses" class="hidden space-y-6 pb-20">
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200"><h2 class="font-racing text-lg font-bold text-slate-800 italic uppercase mb-4 flex items-center gap-2"><i data-lucide="receipt" class="w-5 h-5 text-red-600"></i> Gestión de Gastos Fijos</h2><div class="bg-slate-50 p-4 rounded-lg border border-slate-200 mb-4"><div class="grid grid-cols-2 gap-3 mb-3"><input type="text" id="manageExpenseDesc" placeholder="CONCEPTO (LUZ, ALQUILER)" class="inp w-full uppercase col-span-2"><input type="number" id="manageExpenseAmount" placeholder="MONTO $" class="inp w-full text-lg font-bold"><select id="manageExpenseMethod" class="inp text-sm"><option value="Efectivo">💵 EFECTIVO</option><option value="Banco">🏦 BANCO</option></select></div><div class="flex gap-2"><button id="btnCancelExpense" onclick="window.cancelEditExpense()" class="w-1/3 bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 rounded-lg shadow-lg uppercase text-xs hidden">CANCELAR</button><button id="btnSaveExpense" onclick="window.addExpenseFromTab()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg shadow-lg uppercase text-xs tracking-wide flex justify-center items-center gap-2"><i data-lucide="plus-circle" class="w-4 h-4"></i> REGISTRAR GASTO</button></div></div><div class="flex justify-end mb-2"><select id="filterManageExpenses" onchange="window.renderExpensesList()" class="text-[10px] border rounded p-1 bg-white font-bold text-slate-500 shadow-sm"><option value="month">VER: ESTE MES</option><option value="all">VER: TODOS (HISTORIAL)</option></select></div><div id="manageExpensesList" class="space-y-2 text-sm"></div></div>
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200"><h2 class="font-racing text-lg font-bold text-slate-800 italic uppercase mb-4 flex items-center gap-2"><i data-lucide="receipt" class="w-5 h-5 text-red-600"></i> Gestión de Gastos Fijos</h2><div class="bg-slate-50 p-4 rounded-lg border border-slate-200 mb-4"><div class="grid grid-cols-2 gap-3 mb-3"><input type="date" id="manageExpenseDate" class="inp font-bold text-slate-600"><input type="text" id="manageExpenseDesc" placeholder="CONCEPTO (LUZ, ALQUILER)" class="inp w-full uppercase"><input type="number" id="manageExpenseAmount" placeholder="MONTO $" class="inp w-full text-lg font-bold"><select id="manageExpenseMethod" class="inp text-sm"><option value="Efectivo">💵 EFECTIVO</option><option value="Banco">🏦 BANCO</option></select></div><div class="flex gap-2"><button id="btnCancelExpense" onclick="window.cancelEditExpense()" class="w-1/3 bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 rounded-lg shadow-lg uppercase text-xs hidden">CANCELAR</button><button id="btnSaveExpense" onclick="window.addExpenseFromTab()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg shadow-lg uppercase text-xs tracking-wide flex justify-center items-center gap-2"><i data-lucide="plus-circle" class="w-4 h-4"></i> REGISTRAR GASTO</button></div></div><div class="flex justify-end mb-2"><select id="filterManageExpenses" onchange="window.renderExpensesList()" class="text-[10px] border rounded p-1 bg-white font-bold text-slate-500 shadow-sm"><option value="month">VER: ESTE MES</option><option value="all">VER: TODOS (HISTORIAL)</option></select></div><div id="manageExpensesList" class="space-y-2 text-sm"></div></div>
         </div>
 
         <!-- 6. FINANZAS -->
@@ -270,7 +270,8 @@
         const today = new Date(); 
         const localDate = new Date(today.getTime() - (today.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
         document.getElementById('date').value = localDate; 
-        document.getElementById('wdDate').value = localDate; 
+        document.getElementById('wdDate').value = localDate;
+        document.getElementById('manageExpenseDate').value = localDate; 
         const currMonthStr = localDate.substring(0,7);
         document.getElementById('filterMonth').value = currMonthStr; 
         document.getElementById('dashMonth').value = currMonthStr;
@@ -311,19 +312,13 @@
                 auth = getAuth(app); 
                 db = getFirestore(app); 
                 
-                // YA NO HACEMOS LOGIN AUTOMÁTICO
-                // Esperamos a que el usuario introduzca datos
-                
                 onAuthStateChanged(auth, (u) => { 
                     if (u) { 
-                        // Usuario Logueado
                         document.getElementById('loginScreen').classList.add('opacity-0', 'pointer-events-none');
                         setTimeout(() => { document.getElementById('loginScreen').classList.add('hidden'); }, 500);
-                        
                         document.getElementById('connectionStatus').classList.replace('bg-red-500', 'bg-green-500'); 
                         startListeners(); 
                     } else {
-                        // Usuario No Logueado (mostrar login)
                         document.getElementById('loginScreen').classList.remove('hidden', 'opacity-0', 'pointer-events-none');
                         document.getElementById('connectionStatus').classList.replace('bg-green-500', 'bg-red-500');
                     }
@@ -637,6 +632,9 @@
             document.getElementById('formTitleText').innerText = "Nuevo Trabajo"; 
             document.getElementById('isCounterSale').checked = false; 
             window.toggleCounterSale(); 
+            // Reset dates to local
+            document.getElementById('date').value = localDate;
+            document.getElementById('manageExpenseDate').value = localDate;
             renderTempList(); 
         };
 
@@ -644,7 +642,57 @@
         window.addOrUpdateItem = () => { const desc=document.getElementById('itemDesc').value.toUpperCase(), type=document.getElementById('itemType').value, sell=parseFloat(document.getElementById('itemSellPrice').value), buy=parseFloat(document.getElementById('itemBuyPrice').value); if(!desc||isNaN(sell)) return alert("DATOS INCOMPLETOS"); tempItems.push({desc, type, buyPrice:isNaN(buy)?0:buy, sellPrice:sell}); document.getElementById('itemDesc').value=''; document.getElementById('itemSellPrice').value=''; document.getElementById('itemBuyPrice').value=''; document.getElementById('itemMargin').value=''; renderTempList(); };
         window.renderTempList = () => { const box=document.getElementById('tempListContainer'); if(tempItems.length===0) return box.classList.add('hidden'); box.classList.remove('hidden'); document.getElementById('tempList').innerHTML=tempItems.map((i,x)=>`<tr class="border-b"><td class="py-2 text-slate-700 font-bold">${i.desc} <span class="text-[10px] text-gray-400 block uppercase">${i.type==='labor'?'MANO OBRA':(i.type==='service'?'SERVICIO':'REPUESTO')}</span></td><td class="text-right font-bold">$${i.sellPrice}</td><td class="text-right"><button onclick="window.delTemp(${x})" class="text-red-500"><i data-lucide="trash" class="w-4 h-4"></i></button></td></tr>`).join(''); document.getElementById('previewTotal').innerText=window.formatMoney(tempItems.reduce((a,b)=>a+b.sellPrice,0)); lucide.createIcons(); };
         window.delTemp = (i) => { tempItems.splice(i,1); renderTempList(); };
-        window.saveOrder = async () => { const isCounter = document.getElementById('isCounterSale').checked; let client = {}; if(isCounter) { client = { name: document.getElementById('clientName').value.toUpperCase() || "CLIENTE MOSTRADOR", phone: "", dni: "", model: "VENTA MOSTRADOR", plate: "-", km: "" }; } else { client = { name: document.getElementById('clientName').value.toUpperCase(), phone: document.getElementById('clientPhone').value, dni: document.getElementById('clientDni').value.toUpperCase(), model: document.getElementById('vehicleModel').value.toUpperCase(), plate: document.getElementById('vehiclePlate').value.toUpperCase(), km: document.getElementById('vehicleKm').value }; } if(!client.name || tempItems.length===0) return alert("FALTA CLIENTE O ITEMS"); const total = tempItems.reduce((a,b)=>a+b.sellPrice,0); const date = document.getElementById('date').value; const isQuote = document.getElementById('isQuoteToggle').checked; const docType = isQuote ? 'quote' : 'order'; let payments=[], paidAmount=0, status='pending'; if(editingOrderId) { const old = orders.find(o => o.id === editingOrderId); if(old) { payments = old.payments || []; paidAmount = old.paidAmount || 0; if (!isQuote) status = paidAmount >= total - 1 ? 'paid' : (paidAmount > 0 ? 'partial' : 'pending'); } } else if (!isQuote) { const full=document.getElementById('checkPaidFull').checked, init=parseFloat(document.getElementById('initialPayment').value); const initMethod = document.getElementById('initialPaymentMethod').value; if(full){ paidAmount=total; payments.push({amount:total, date:new Date().toISOString(), method: initMethod}); } else if(!isNaN(init)&&init>0){ paidAmount=init; payments.push({amount:init, date:new Date().toISOString(), method: initMethod}); } status = paidAmount>=total-1?'paid':(paidAmount>0?'partial':'pending'); } let customId = ""; if(editingOrderId && !isQuote) { const old = orders.find(o=>o.id===editingOrderId); customId = old.docType === 'quote' && !isQuote ? generateId(date) : old.customId; } else if (!isQuote) { customId = generateId(date); } const data = { client, date, items: tempItems, total, docType, customId, payments, paidAmount, status, updatedAt:new Date() }; if(editingOrderId) await updateDoc(doc(db,"orders",editingOrderId), data); else await addDoc(collection(db,"orders"), data); window.resetForm(); };
+        window.saveOrder = async () => { 
+            const isCounter = document.getElementById('isCounterSale').checked; 
+            let client = {}; 
+            if(isCounter) { 
+                client = { name: document.getElementById('clientName').value.toUpperCase() || "CLIENTE MOSTRADOR", phone: "", dni: "", model: "VENTA MOSTRADOR", plate: "-", km: "" }; 
+            } else { 
+                client = { name: document.getElementById('clientName').value.toUpperCase(), phone: document.getElementById('clientPhone').value, dni: document.getElementById('clientDni').value.toUpperCase(), model: document.getElementById('vehicleModel').value.toUpperCase(), plate: document.getElementById('vehiclePlate').value.toUpperCase(), km: document.getElementById('vehicleKm').value }; 
+            } 
+            if(!client.name || tempItems.length===0) return alert("FALTA CLIENTE O ITEMS"); 
+            const total = tempItems.reduce((a,b)=>a+b.sellPrice,0); 
+            const date = document.getElementById('date').value; 
+            const isQuote = document.getElementById('isQuoteToggle').checked; 
+            const docType = isQuote ? 'quote' : 'order'; 
+            let payments=[], paidAmount=0, status='pending'; 
+            
+            if(editingOrderId) { 
+                const old = orders.find(o => o.id === editingOrderId); 
+                if(old) { 
+                    payments = old.payments || []; 
+                    paidAmount = old.paidAmount || 0; 
+                    if (!isQuote) status = paidAmount >= total - 1 ? 'paid' : (paidAmount > 0 ? 'partial' : 'pending'); 
+                } 
+            } else if (!isQuote) { 
+                const full=document.getElementById('checkPaidFull').checked, init=parseFloat(document.getElementById('initialPayment').value); 
+                const initMethod = document.getElementById('initialPaymentMethod').value; 
+                // USAR LA FECHA SELECCIONADA EN EL FORMULARIO PARA EL PAGO INICIAL
+                const paymentDate = document.getElementById('date').value; 
+                
+                if(full){ 
+                    paidAmount=total; 
+                    payments.push({amount:total, date: paymentDate, method: initMethod}); 
+                } else if(!isNaN(init)&&init>0){ 
+                    paidAmount=init; 
+                    payments.push({amount:init, date: paymentDate, method: initMethod}); 
+                } 
+                status = paidAmount>=total-1?'paid':(paidAmount>0?'partial':'pending'); 
+            } 
+            
+            let customId = ""; 
+            if(editingOrderId && !isQuote) { 
+                const old = orders.find(o=>o.id===editingOrderId); 
+                customId = old.docType === 'quote' && !isQuote ? generateId(date) : old.customId; 
+            } else if (!isQuote) { 
+                customId = generateId(date); 
+            } 
+            
+            const data = { client, date, items: tempItems, total, docType, customId, payments, paidAmount, status, updatedAt:new Date() }; 
+            if(editingOrderId) await updateDoc(doc(db,"orders",editingOrderId), data); else await addDoc(collection(db,"orders"), data); 
+            window.resetForm(); 
+        };
+        
         function generateId(date) { const m = date.substring(0,7); const max = orders.filter(o=>o.docType!=='quote' && o.customId && o.customId.startsWith(m)).reduce((m,o)=>{const s=parseInt(o.customId.split('-')[2]);return s>m?s:m},0); return `${m}-${String(max+1).padStart(3,'0')}`; }
         window.convertToOrder = async (id) => { if(!confirm("¿APROBAR PRESUPUESTO Y CREAR ORDEN DE TRABAJO?")) return; const todayStr = new Date(new Date().getTime() - (new Date().getTimezoneOffset() * 60000)).toISOString().substring(0,10); const newCustomId = generateId(todayStr); await updateDoc(doc(db,"orders",id), { docType: 'order', customId: newCustomId, status: 'pending', date: todayStr, updatedAt: new Date() }); currentListFilter = 'debt'; document.getElementById('filter-debt').className = "filter-btn active"; window.renderApp(); alert(`¡Presupuesto aprobado! Orden N° ${newCustomId} creada con fecha ${todayStr}.`); };
         window.searchProducts = (q) => { q = q.toUpperCase(); const drop = document.getElementById('productDropdown'); if (q.length < 2) { drop.classList.add('hidden'); return; } const matches = products.filter(p => p.desc.includes(q) || (p.code && p.code.includes(q))); if (matches.length === 0) { drop.classList.add('hidden'); return; } drop.innerHTML = matches.map(p => `<div onclick="window.selectProduct('${p.desc}', ${p.cost}, '${p.code || ''}')"><span class="text-xs text-gray-400 font-mono mr-2">${p.code || '#'}</span> ${p.desc} <span class="float-right text-gray-400">$${p.cost}</span></div>`).join(''); drop.classList.remove('hidden'); };
@@ -686,6 +734,231 @@
             img.onerror = () => { alert("Logo no encontrado, imprimiendo sin imagen."); };
         };
         window.printOrder = (id) => { viewingOrderId = id; window.printOrderFromView(); };
+
+        // --- RESTORED FUNCTIONS (MISSING PREVIOUSLY) ---
+        window.loadOrderForEdit = (id) => {
+            const o = orders.find(x => x.id === id);
+            if(!o) return;
+            editingOrderId = id;
+            document.getElementById('date').value = o.date; // Use existing order date
+            document.getElementById('clientName').value = o.client.name;
+            document.getElementById('clientPhone').value = o.client.phone;
+            document.getElementById('clientDni').value = o.client.dni;
+            document.getElementById('vehicleModel').value = o.client.model;
+            document.getElementById('vehiclePlate').value = o.client.plate;
+            document.getElementById('vehicleKm').value = o.client.km;
+            tempItems = o.items || [];
+            
+            if(o.docType === 'quote') {
+                document.getElementById('isQuoteToggle').checked = true;
+                window.toggleQuoteMode();
+            }
+            if(o.client.model === 'VENTA MOSTRADOR') {
+                document.getElementById('isCounterSale').checked = true;
+                window.toggleCounterSale();
+            }
+            
+            document.getElementById('editModeHeader').classList.remove('hidden');
+            document.getElementById('btnCancelMain').classList.remove('hidden');
+            document.getElementById('formTitleText').innerText = o.docType === 'quote' ? "EDITANDO PRESUPUESTO" : `EDITANDO ORDEN ${o.customId}`;
+            
+            // Payment Management Button
+            if(o.docType !== 'quote') {
+                document.getElementById('editPaymentSection').classList.remove('hidden');
+            }
+            
+            window.renderTempList();
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        };
+
+        window.openPaymentModal = (id) => {
+            if(id) activePaymentId = id;
+            else if (editingOrderId) activePaymentId = editingOrderId;
+            else return;
+            
+            const o = orders.find(x => x.id === activePaymentId);
+            if(!o) return;
+            
+            const total = o.total;
+            const paid = o.paidAmount || 0;
+            const bal = total - paid;
+            
+            document.getElementById('payBalance').innerText = window.formatMoney(bal);
+            document.getElementById('newPaymentInput').value = bal > 0 ? bal : '';
+            
+            const list = document.getElementById('paymentHistoryList');
+            if(o.payments && o.payments.length > 0) {
+                list.innerHTML = o.payments.map(p => `
+                    <div class="flex justify-between items-center p-2 bg-slate-50 border-b border-slate-100 text-xs">
+                        <div>
+                            <span class="font-bold text-slate-700">${new Date(window.parseDate(p.date)).toLocaleDateString()}</span>
+                            <span class="text-gray-400 ml-1">(${p.method})</span>
+                        </div>
+                        <span class="font-bold text-green-600">${window.formatMoney(p.amount)}</span>
+                    </div>
+                `).join('');
+            } else {
+                list.innerHTML = '<p class="text-center text-gray-400 text-xs py-4">Sin pagos registrados</p>';
+            }
+            
+            document.getElementById('paymentModal').classList.remove('hidden');
+        };
+
+        window.closePaymentModal = () => {
+            document.getElementById('paymentModal').classList.add('hidden');
+            activePaymentId = null;
+        };
+
+        window.addPayment = async () => {
+            if(!activePaymentId) return;
+            const amount = parseFloat(document.getElementById('newPaymentInput').value);
+            const method = document.getElementById('newPaymentMethod').value;
+            
+            if(isNaN(amount) || amount <= 0) return alert("Monto inválido");
+            
+            const o = orders.find(x => x.id === activePaymentId);
+            if(!o) return;
+            
+            const newPayments = [...(o.payments || []), {
+                amount: amount,
+                date: new Date().toISOString(), // Payment modal uses 'now', unless specific date requested
+                method: method
+            }];
+            
+            const newPaidAmount = (o.paidAmount || 0) + amount;
+            let newStatus = o.status;
+            if(newPaidAmount >= o.total - 1) newStatus = 'paid';
+            else if (newPaidAmount > 0) newStatus = 'partial';
+            
+            await updateDoc(doc(db, "orders", activePaymentId), {
+                payments: newPayments,
+                paidAmount: newPaidAmount,
+                status: newStatus,
+                updatedAt: new Date()
+            });
+            
+            window.closePaymentModal();
+            window.renderApp();
+            
+            if(editingOrderId === activePaymentId) {
+                // If we were editing this order, refresh the edit view? Or just leave it.
+            }
+        };
+
+        window.toggleFullPayModal = () => {
+            if(document.getElementById('payFullCheck').checked) {
+                const o = orders.find(x => x.id === activePaymentId);
+                const bal = o.total - (o.paidAmount || 0);
+                document.getElementById('newPaymentInput').value = bal;
+            }
+        };
+        
+        window.openCurrentOrderPayment = () => {
+            if(editingOrderId) window.openPaymentModal(editingOrderId);
+        };
+
+        // --- EXPENSE FUNCTIONS ---
+        window.addExpenseFromTab = async () => {
+            const desc = document.getElementById('manageExpenseDesc').value.toUpperCase();
+            const amount = parseFloat(document.getElementById('manageExpenseAmount').value);
+            const method = document.getElementById('manageExpenseMethod').value;
+            // NEW: Use selected date or default to today
+            let dateVal = document.getElementById('manageExpenseDate').value;
+            if(!dateVal) dateVal = new Date().toISOString().substring(0,7); // Fallback
+            else dateVal = dateVal.substring(0,7); // We store YYYY-MM for expenses usually for filtering?
+            
+            // Wait, expense filtering is by month (YYYY-MM).
+            // But we should store full date YYYY-MM-DD for record, and group by YYYY-MM
+            const fullDate = document.getElementById('manageExpenseDate').value;
+            if (!desc || isNaN(amount) || !fullDate) return alert("Datos incompletos");
+            
+            // Extract YYYY-MM for indexing if needed, but we filter by date string prefix
+            const monthStr = fullDate.substring(0,7); 
+            
+            if(editingExpenseId) {
+                await updateDoc(doc(db,"expenses",editingExpenseId), { desc, amount, method, date: monthStr, fullDate: fullDate });
+                editingExpenseId = null;
+                document.getElementById('btnSaveExpense').innerHTML = `<i data-lucide="plus-circle" class="w-4 h-4"></i> REGISTRAR GASTO`;
+                document.getElementById('btnCancelExpense').classList.add('hidden');
+            } else {
+                await addDoc(collection(db,"expenses"), { desc, amount, method, date: monthStr, fullDate: fullDate, createdAt: new Date() });
+            }
+            
+            document.getElementById('manageExpenseDesc').value = '';
+            document.getElementById('manageExpenseAmount').value = '';
+            // Don't clear date, useful for bulk entry
+        };
+
+        window.loadExpenseForEdit = (id) => {
+            const e = expenses.find(x => x.id === id);
+            if(!e) return;
+            editingExpenseId = id;
+            document.getElementById('manageExpenseDesc').value = e.desc;
+            document.getElementById('manageExpenseAmount').value = e.amount;
+            document.getElementById('manageExpenseMethod').value = e.method || 'Efectivo';
+            
+            // Try to set date. If old record doesn't have fullDate, construct from month
+            if(e.fullDate) document.getElementById('manageExpenseDate').value = e.fullDate;
+            else document.getElementById('manageExpenseDate').value = e.date + '-01';
+            
+            document.getElementById('btnSaveExpense').innerHTML = "GUARDAR CAMBIOS";
+            document.getElementById('btnCancelExpense').classList.remove('hidden');
+        };
+
+        window.cancelEditExpense = () => {
+            editingExpenseId = null;
+            document.getElementById('manageExpenseDesc').value = '';
+            document.getElementById('manageExpenseAmount').value = '';
+            document.getElementById('btnSaveExpense').innerHTML = `<i data-lucide="plus-circle" class="w-4 h-4"></i> REGISTRAR GASTO`;
+            document.getElementById('btnCancelExpense').classList.add('hidden');
+        };
+
+        window.deleteExpense = async (id) => {
+            if(confirm("¿Eliminar gasto?")) await deleteDoc(doc(db,"expenses", id));
+        };
+
+        // --- WITHDRAWAL FUNCTIONS ---
+        window.addWithdrawal = async () => {
+            const amount = parseFloat(document.getElementById('wdAmount').value);
+            const date = document.getElementById('wdDate').value;
+            const person = document.getElementById('wdPerson').value;
+            const method = document.getElementById('wdMethod').value;
+            
+            if(isNaN(amount) || !date) return alert("Faltan datos");
+            
+            if(editingWithdrawalId) {
+                await updateDoc(doc(db,"withdrawals", editingWithdrawalId), { amount, date, person, method });
+                editingWithdrawalId = null;
+                document.getElementById('btnSaveWd').innerText = "CONFIRMAR";
+                document.getElementById('btnCancelWd').classList.add('hidden');
+            } else {
+                await addDoc(collection(db,"withdrawals"), { amount, date, person, method, createdAt: new Date() });
+            }
+            document.getElementById('wdAmount').value = '';
+        };
+
+        window.loadWithdrawalForEdit = (id) => {
+            const w = withdrawals.find(x => x.id === id);
+            if(!w) return;
+            editingWithdrawalId = id;
+            document.getElementById('wdAmount').value = w.amount;
+            document.getElementById('wdDate').value = w.date;
+            document.getElementById('wdPerson').value = w.person;
+            document.getElementById('wdMethod').value = w.method;
+            document.getElementById('btnSaveWd').innerText = "GUARDAR CAMBIOS";
+            document.getElementById('btnCancelWd').classList.remove('hidden');
+        };
+
+        window.cancelEditWithdrawal = () => {
+            editingWithdrawalId = null;
+            document.getElementById('wdAmount').value = '';
+            document.getElementById('btnSaveWd').innerText = "CONFIRMAR";
+            document.getElementById('btnCancelWd').classList.add('hidden');
+        };
+
+        window.deleteWithdrawal = async (id) => {
+            if(confirm("¿Eliminar retiro?")) await deleteDoc(doc(db,"withdrawals",id));
+        };
 
         // --- INIT ---
         window.addEventListener('load', initApp);
