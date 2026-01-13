@@ -817,20 +817,62 @@
             
             const list = document.getElementById('paymentHistoryList');
             if(o.payments && o.payments.length > 0) {
-                list.innerHTML = o.payments.map(p => `
-                    <div class="flex justify-between items-center p-2 bg-slate-50 border-b border-slate-100 text-xs">
+                // MODIFICADO: Agregado botón de eliminar con índice
+                list.innerHTML = o.payments.map((p, index) => `
+                    <div class="flex justify-between items-center p-3 bg-slate-50 border-b border-slate-100 text-xs hover:bg-slate-100 transition">
                         <div>
-                            <span class="font-bold text-slate-700">${new Date(window.parseDate(p.date)).toLocaleDateString()}</span>
-                            <span class="text-gray-400 ml-1">(${p.method})</span>
+                            <span class="font-bold text-slate-700 block">${new Date(window.parseDate(p.date)).toLocaleDateString()}</span>
+                            <span class="text-[10px] text-gray-500 uppercase tracking-wider">${p.method}</span>
                         </div>
-                        <span class="font-bold text-green-600">${window.formatMoney(p.amount)}</span>
+                        <div class="flex items-center gap-3">
+                            <span class="font-bold text-green-600 text-sm">${window.formatMoney(p.amount)}</span>
+                            <button onclick="window.deletePayment(${index})" class="text-gray-400 hover:text-red-500 p-1 rounded transition" title="Eliminar pago">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
                     </div>
                 `).join('');
+                lucide.createIcons(); // Refrescar iconos nuevos
             } else {
                 list.innerHTML = '<p class="text-center text-gray-400 text-xs py-4">Sin pagos registrados</p>';
             }
             
             document.getElementById('paymentModal').classList.remove('hidden');
+        };
+
+        // NUEVA FUNCIÓN: Eliminar Pago
+        window.deletePayment = async (index) => {
+            if(!activePaymentId) return;
+            if(!confirm("¿Eliminar este pago? El saldo de la orden se recalculará.")) return;
+
+            const o = orders.find(x => x.id === activePaymentId);
+            if(!o || !o.payments) return;
+
+            // Crear copia del array y eliminar el elemento
+            const newPayments = [...o.payments];
+            newPayments.splice(index, 1);
+
+            // Recalcular total pagado
+            const newPaidAmount = newPayments.reduce((acc, curr) => acc + curr.amount, 0);
+            
+            // Recalcular estado
+            let newStatus = 'pending';
+            if (newPaidAmount >= o.total - 1) newStatus = 'paid';
+            else if (newPaidAmount > 0) newStatus = 'partial';
+
+            try {
+                await updateDoc(doc(db, "orders", activePaymentId), {
+                    payments: newPayments,
+                    paidAmount: newPaidAmount,
+                    status: newStatus,
+                    updatedAt: new Date()
+                });
+                // Recargar el modal para reflejar cambios
+                window.openPaymentModal(activePaymentId);
+            } catch (e) {
+                console.error(e);
+                alert("Error al eliminar el pago");
+            }
         };
 
         window.closePaymentModal = () => {
