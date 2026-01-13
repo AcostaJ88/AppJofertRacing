@@ -69,7 +69,7 @@
                 </button>
                 <p id="loginError" class="text-xs text-red-500 font-bold text-center h-4 mt-2 uppercase"></p>
             </div>
-            <p class="text-[10px] text-gray-300 mt-4">v2.7 - Simplified Finance</p>
+            <p class="text-[10px] text-gray-300 mt-4">v2.8 - Arrow Navigation</p>
         </div>
     </div>
 
@@ -143,7 +143,18 @@
             </section>
 
             <section>
-                <div class="flex flex-col gap-3 mb-4"><div class="flex justify-between items-center px-1"><h3 class="font-racing font-bold text-slate-700 italic uppercase">Listado</h3><input type="month" id="filterMonth" class="text-xs border rounded-md p-1 font-bold text-slate-600 bg-white shadow-sm"></div><div class="flex gap-2 overflow-x-auto pb-1 no-scrollbar"><button onclick="window.setListFilter('all')" id="filter-all" class="filter-btn active">TODOS</button><button onclick="window.setListFilter('debt')" id="filter-debt" class="filter-btn">A COBRAR</button><button onclick="window.setListFilter('paid')" id="filter-paid" class="filter-btn">FINALIZADOS</button><button onclick="window.setListFilter('quote')" id="filter-quote" class="filter-btn">PRESUPUESTOS</button></div></div>
+                <div class="flex flex-col gap-3 mb-4">
+                    <div class="flex justify-between items-center px-1">
+                        <h3 class="font-racing font-bold text-slate-700 italic uppercase">Listado</h3>
+                        <div class="flex items-center bg-white border border-slate-200 rounded-lg shadow-sm">
+                            <button onclick="window.changeMonth(-1, 'filterMonth')" class="p-1.5 text-slate-400 hover:text-red-600"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
+                            <span id="filterMonth-display" class="text-[10px] font-black text-slate-700 uppercase w-24 text-center select-none">...</span>
+                            <button onclick="window.changeMonth(1, 'filterMonth')" class="p-1.5 text-slate-400 hover:text-red-600"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
+                        </div>
+                        <input type="hidden" id="filterMonth">
+                    </div>
+                    <div class="flex gap-2 overflow-x-auto pb-1 no-scrollbar"><button onclick="window.setListFilter('all')" id="filter-all" class="filter-btn active">TODOS</button><button onclick="window.setListFilter('debt')" id="filter-debt" class="filter-btn">A COBRAR</button><button onclick="window.setListFilter('paid')" id="filter-paid" class="filter-btn">FINALIZADOS</button><button onclick="window.setListFilter('quote')" id="filter-quote" class="filter-btn">PRESUPUESTOS</button></div>
+                </div>
                 <div id="ordersList" class="space-y-3 uppercase-force"><div class="p-8 text-center text-slate-400"><div class="loader mb-2 mx-auto"></div>Cargando...</div></div>
             </section>
         </div>
@@ -169,7 +180,12 @@
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
                 <div class="border-b border-slate-100 pb-2 mb-2 flex justify-between items-center">
                     <h3 class="font-bold text-slate-700 text-xs uppercase">Historial</h3>
-                    <input type="month" id="wdHistoryFilter" class="text-xs border rounded p-1 font-bold text-slate-600" onchange="window.renderWithdrawals()">
+                    <div class="flex items-center bg-white border border-slate-200 rounded-lg shadow-sm">
+                        <button onclick="window.changeMonth(-1, 'wdHistoryFilter')" class="p-1.5 text-slate-400 hover:text-red-600"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
+                        <span id="wdHistoryFilter-display" class="text-[10px] font-black text-slate-700 uppercase w-20 text-center select-none">...</span>
+                        <button onclick="window.changeMonth(1, 'wdHistoryFilter')" class="p-1.5 text-slate-400 hover:text-red-600"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
+                    </div>
+                    <input type="hidden" id="wdHistoryFilter">
                 </div>
                 <div id="withdrawalsList" class="divide-y divide-slate-100 text-sm"></div>
             </div>
@@ -220,7 +236,15 @@
 
         <!-- 6. FINANZAS -->
         <div id="view-finance" class="hidden space-y-6 pb-20">
-            <div class="flex justify-between items-center mb-4"><div><h2 class="font-racing text-xl font-black italic text-slate-800 uppercase">Finanzas</h2><p class="text-xs text-slate-500">ANÁLISIS MENSUAL</p></div><input type="month" id="dashMonth" onchange="window.renderDashboard()" class="text-sm font-bold border border-slate-300 rounded-lg p-2 bg-white text-red-600 shadow-sm"></div>
+            <div class="flex justify-between items-center mb-4">
+                <div><h2 class="font-racing text-xl font-black italic text-slate-800 uppercase">Finanzas</h2><p class="text-xs text-slate-500">ANÁLISIS MENSUAL</p></div>
+                <div class="flex items-center bg-white border border-slate-200 rounded-lg shadow-sm">
+                    <button onclick="window.changeMonth(-1, 'dashMonth')" class="p-2 text-slate-400 hover:text-red-600"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
+                    <span id="dashMonth-display" class="text-xs font-black text-slate-700 uppercase w-24 text-center select-none">...</span>
+                    <button onclick="window.changeMonth(1, 'dashMonth')" class="p-2 text-slate-400 hover:text-red-600"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
+                </div>
+                <input type="hidden" id="dashMonth">
+            </div>
             
             <!-- TOTAL BRUTO -->
             <div class="bg-slate-900 rounded-xl p-5 text-white shadow-lg border-l-4 border-white mb-4">
@@ -349,16 +373,20 @@
         let orders=[], expenses=[], withdrawals=[], products=[], settlements=[];
         let tempItems=[], editingOrderId=null, editingItemIndex=-1, activePaymentId=null, editingWithdrawalId=null, currentListFilter='all', viewingOrderId=null;
         let editingExpenseId = null;
+        
+        // --- PICKER STATE ---
+        window.pickerDates = {
+            filterMonth: new Date(),
+            wdHistoryFilter: new Date(),
+            dashMonth: new Date()
+        };
+
         const today = new Date(); 
         const localDate = new Date(today.getTime() - (today.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
         document.getElementById('date').value = localDate; 
         document.getElementById('wdDate').value = localDate;
         document.getElementById('manageExpenseDate').value = localDate;
         document.getElementById('setDate').value = localDate;
-        const currMonthStr = localDate.substring(0,7);
-        document.getElementById('filterMonth').value = currMonthStr; 
-        document.getElementById('dashMonth').value = currMonthStr;
-        document.getElementById('wdHistoryFilter').value = currMonthStr;
 
         // --- HELPER FUNCTIONS ---
         window.safeSetText = (id, text) => { const el = document.getElementById(id); if(el) el.innerText = text; };
@@ -366,6 +394,41 @@
         window.exportToExcel = () => { let csv="ID,FECHA,CLIENTE,DNI,AUTO,TOTAL,ESTADO\n"; orders.forEach(o=>{csv+=`${o.customId||''},${o.date},${o.client.name},${o.client.dni||''},${o.client.model},${o.total},${o.status}\n`}); const link=document.createElement("a");link.href="data:text/csv;charset=utf-8,"+encodeURI(csv);link.download="Jofert_Data.csv";document.body.appendChild(link);link.click(); };
         window.parseDate = (dateStr) => { if(!dateStr) return new Date(); const parts = dateStr.split('-'); return new Date(parts[0], parts[1] - 1, parts[2]); }; 
         
+        // --- DATE PICKER LOGIC ---
+        function initMonthPickers() {
+            const ids = ['filterMonth', 'wdHistoryFilter', 'dashMonth'];
+            const today = new Date();
+            const localDateObj = new Date(today.getTime() - (today.getTimezoneOffset() * 60000));
+            
+            ids.forEach(id => {
+                window.pickerDates[id] = new Date(localDateObj);
+                updatePickerUI(id);
+            });
+        }
+
+        function updatePickerUI(id) {
+            const d = window.pickerDates[id];
+            const monthStr = d.toISOString().slice(0, 7);
+            const el = document.getElementById(id);
+            if(el) el.value = monthStr;
+            
+            const displayEl = document.getElementById(id + '-display');
+            if(displayEl) {
+                const name = d.toLocaleString('es-ES', { month: 'long', year: 'numeric' });
+                displayEl.innerText = name.toUpperCase();
+            }
+        }
+
+        window.changeMonth = (offset, id) => {
+            const d = window.pickerDates[id];
+            d.setMonth(d.getMonth() + offset);
+            updatePickerUI(id);
+            
+            if (id === 'filterMonth') window.renderApp();
+            else if (id === 'wdHistoryFilter') window.renderWithdrawals();
+            else if (id === 'dashMonth') { window.renderDashboard(); window.renderExpensesList(); }
+        };
+
         // --- AUTH LOGIC (MODIFICADO) ---
         window.doLogin = async () => {
             const email = document.getElementById('loginEmail').value;
@@ -395,6 +458,9 @@
                 auth = getAuth(app); 
                 db = getFirestore(app); 
                 
+                // Initialize custom pickers
+                initMonthPickers();
+
                 onAuthStateChanged(auth, (u) => { 
                     if (u) { 
                         document.getElementById('loginScreen').classList.add('opacity-0', 'pointer-events-none');
