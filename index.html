@@ -69,7 +69,7 @@
                 </button>
                 <p id="loginError" class="text-xs text-red-500 font-bold text-center h-4 mt-2 uppercase"></p>
             </div>
-            <p class="text-[10px] text-gray-300 mt-4">v2.8 - Arrow Navigation</p>
+            <p class="text-[10px] text-gray-300 mt-4">v2.9 - Wd Fix</p>
         </div>
     </div>
 
@@ -613,11 +613,12 @@
             const allWd = [...manualWd, ...directWd].filter(w => {
                 let dStr = w.date;
                 // If it's a full ISO string (UTC), convert to local YYYY-MM-DD
-                if(dStr.includes('T')) {
+                if(dStr && dStr.includes('T')) {
                     const d = new Date(dStr);
                     // Subtract timezone offset to get local time representation
                     dStr = new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
                 }
+                if (!dStr) return false; // Safety check
                 return dStr.startsWith(m);
             }).sort((a,b) => new Date(b.date) - new Date(a.date));
 
@@ -701,32 +702,19 @@
             const joseProfit = joseLaborShare + josePartsShare + joseServicesShare;
 
             const netProfitToSplit = netLabor + netParts + netServices;
-
-            // --- CASH FLOW ---
-            let cashIn = 0, bankJoseIn = 0, bankFerIn = 0;
-            let cashOut = 0, bankJoseOut = 0, bankFerOut = 0;
             
             // Expenses Contribution Tracking (NEW)
             let expensesPaidByFer = 0;
             let expensesPaidByJose = 0;
-
-            // Cash In (Monthly)
-            mOrders.forEach(o => {
-                (o.payments || []).forEach(p => {
-                    if(p.method === 'Efectivo') cashIn += p.amount;
-                    else if(p.method === 'Banco Jose') bankJoseIn += p.amount;
-                    else if(p.method === 'Banco Fer') bankFerIn += p.amount;
-                });
-            });
             
             // FIX: Apply timezone correction to withdrawals filtering
             const mWithdrawals = withdrawals.filter(w => {
                 let dStr = w.date;
-                if(dStr.includes('T')) {
+                if(dStr && dStr.includes('T')) {
                     const d = new Date(dStr);
                     dStr = new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
                 }
-                return dStr.startsWith(m);
+                return dStr && dStr.startsWith(m);
             });
 
             let ferWd = 0, joseWd = 0;
@@ -734,14 +722,6 @@
             let joseWdCash = 0, joseWdTrans = 0, joseWdDirect = 0;
 
             mWithdrawals.forEach(w => {
-                // Determine source of funds for withdrawal
-                if (w.method === 'Efectivo') cashOut += w.amount;
-                // Simplification: if person is Fer and method is Banco -> Bank Fer Out.
-                if (w.method === 'Banco') {
-                    if (w.person === 'Fer') bankFerOut += w.amount;
-                    else bankJoseOut += w.amount;
-                }
-
                 if(w.person === 'Fer') {
                     ferWd += w.amount;
                     if(w.method === 'Efectivo') ferWdCash += w.amount; else ferWdTrans += w.amount;
@@ -755,17 +735,9 @@
             mExpenses.forEach(e => {
                  // Check new structure
                  if (e.amounts) {
-                     cashOut += (e.amounts.cash || 0);
-                     bankJoseOut += (e.amounts.bankJose || 0);
-                     bankFerOut += (e.amounts.bankFer || 0);
-                     
                      // Track who paid what from their "personal/bank" stash for returns logic
                      expensesPaidByFer += (e.amounts.bankFer || 0);
                      expensesPaidByJose += (e.amounts.bankJose || 0);
-                 } else {
-                     // Legacy support
-                     if(e.method === 'Banco') bankJoseOut += e.amount; // Default legacy to Jose? Or split?
-                     else cashOut += e.amount;
                  }
             });
             
@@ -779,13 +751,11 @@
                         const profitPortion = p.amount * ratio; 
                         joseWd += profitPortion; 
                         joseWdDirect += profitPortion;
-                        bankJoseOut += profitPortion; 
                     }
                     if(p.method === 'Banco Fer') { 
                         const profitPortion = p.amount * ratio; 
                         ferWd += profitPortion; 
                         ferWdDirect += profitPortion;
-                        bankFerOut += profitPortion;
                     }
                 });
             });
@@ -894,9 +864,6 @@
             window.safeSetText('joseWdDirect', window.formatMoney(joseWdDirect));
 
             window.safeSetText('expensesTotal', window.formatMoney(fixedExpenses));
-            
-            // UPDATE BALANCES (REMOVED as requested)
-            // window.safeSetText('cashBalance', window.formatMoney(cashIn - cashOut));
             
             if(document.getElementById('opsIndicators')) document.getElementById('opsIndicators').classList.remove('hidden');
             window.safeSetText('countVehicles', vehiclesCount);
@@ -1078,6 +1045,65 @@
                 try { await deleteDoc(doc(db, "orders", id)); } catch (error) { console.error("Error", error); alert("Error al eliminar."); }
             }
         };
+        // --- WITHDRAWAL FUNCTIONS (FIXED) ---
+        window.addWithdrawal = async () => {
+            const amount = parseFloat(document.getElementById('wdAmount').value);
+            const date = document.getElementById('wdDate').value;
+            const person = document.getElementById('wdPerson').value;
+            const method = document.getElementById('wdMethod').value;
+            const btn = document.getElementById('btnSaveWd');
+            
+            if(isNaN(amount) || !date) return alert("Faltan datos");
+
+            // UI Loading
+            const originalText = btn.innerText;
+            btn.innerHTML = '<div class="loader w-4 h-4 border-white border-t-transparent mx-auto"></div>';
+            btn.disabled = true;
+            
+            try {
+                if(editingWithdrawalId) {
+                    await updateDoc(doc(db,"withdrawals", editingWithdrawalId), { amount, date, person, method });
+                    editingWithdrawalId = null;
+                    document.getElementById('btnSaveWd').innerText = "CONFIRMAR";
+                    document.getElementById('btnCancelWd').classList.add('hidden');
+                } else {
+                    await addDoc(collection(db,"withdrawals"), { amount, date, person, method, createdAt: new Date() });
+                }
+                document.getElementById('wdAmount').value = '';
+                // Optional: alert("Guardado"); 
+            } catch (e) {
+                console.error(e);
+                alert("Error al guardar retiro: " + e.message);
+            } finally {
+                // Restore UI
+                if(!editingWithdrawalId) btn.innerText = "CONFIRMAR"; // Reset text
+                btn.disabled = false;
+            }
+        };
+
+        window.loadWithdrawalForEdit = (id) => {
+            const w = withdrawals.find(x => x.id === id);
+            if(!w) return;
+            editingWithdrawalId = id;
+            document.getElementById('wdAmount').value = w.amount;
+            document.getElementById('wdDate').value = w.date;
+            document.getElementById('wdPerson').value = w.person;
+            document.getElementById('wdMethod').value = w.method;
+            document.getElementById('btnSaveWd').innerText = "GUARDAR CAMBIOS";
+            document.getElementById('btnCancelWd').classList.remove('hidden');
+        };
+
+        window.cancelEditWithdrawal = () => {
+            editingWithdrawalId = null;
+            document.getElementById('wdAmount').value = '';
+            document.getElementById('btnSaveWd').innerText = "CONFIRMAR";
+            document.getElementById('btnCancelWd').classList.add('hidden');
+        };
+
+        window.deleteWithdrawal = async (id) => {
+            if(confirm("¿Eliminar retiro?")) await deleteDoc(doc(db,"withdrawals",id));
+        };
+        
         window.toggleQuoteMode = () => { const isQuote = document.getElementById('isQuoteToggle').checked; document.getElementById('paymentSection').className = isQuote ? 'hidden' : 'bg-white/10 p-3 rounded-lg mb-3 border border-white/5'; document.getElementById('orderFooter').classList.toggle('bg-amber-500', isQuote); document.getElementById('orderFooter').classList.toggle('bg-slate-900', !isQuote); document.getElementById('btnSaveText').innerText = isQuote ? "GUARDAR PRESUPUESTO" : "CONFIRMAR ORDEN"; const titleEl = document.getElementById('formTitleText'); if(editingOrderId) { titleEl.innerText = isQuote ? "EDITANDO PRESUPUESTO" : "EDITANDO ORDEN"; } else { titleEl.innerText = isQuote ? "NUEVO PRESUPUESTO" : "NUEVO TRABAJO"; } };
         window.toggleCostInput = () => { document.getElementById('itemBuyPrice').disabled = (document.getElementById('itemType').value === 'labor'); if(document.getElementById('itemType').value === 'labor') document.getElementById('itemBuyPrice').value = ''; };
         window.toggleCounterSale = () => { const isCounter = document.getElementById('isCounterSale').checked; document.getElementById('personalDataGroup').style.display = isCounter ? 'none' : 'contents'; document.getElementById('vehicleDataGroup').style.display = isCounter ? 'none' : 'contents'; if (isCounter) { document.getElementById('clientName').value = "CLIENTE MOSTRADOR"; document.getElementById('itemType').value = 'part'; window.toggleCostInput(); } else { document.getElementById('clientName').value = ""; } };
